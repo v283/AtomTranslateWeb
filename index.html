@@ -1,11 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atom Translate — offline-first dictionary & language learning</title>
+<meta name="description" content="Atom Translate is an offline-first dictionary and language-learning app for Android, iOS, macOS, and Windows — flashcards, quizzes, community decks, and built-in translation.">
+<link rel="canonical" href="https://atomtranslate.valentineos.pp.ua/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Atom Translate — offline-first dictionary & language learning">
+<meta property="og:description" content="Build vocabulary offline with flashcards, quizzes, writing and matching modes, optional cloud sync, and a community deck library.">
+<meta property="og:url" content="https://atomtranslate.valentineos.pp.ua">
+<meta property="og:image" content="https://atomtranslate.valentineos.pp.ua/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Atom Translate — offline-first dictionary & language learning">
+<meta name="twitter:description" content="Build vocabulary offline with flashcards, quizzes, writing and matching modes, optional cloud sync, and a community deck library.">
+<meta name="twitter:image" content="https://atomtranslate.valentineos.pp.ua/og-image.png">
+
+<meta name="theme-color" content="#10131a">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href="index.html">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(60 12 12)"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(120 12 12)"/>
+        </svg>
+      </span>
+      Atom Translate
+    </a>
+    <nav class="site-nav">
+      <a href="#features">Features</a>
+      <a href="#modes">Study modes</a>
+      <a href="#download">Download</a>
+      <a href="report.html">Report a bug</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-ghost hide-mobile" href="report.html">Report a bug</a>
+      <a class="btn btn-primary" href="#download">Get the app</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">Offline-first dictionary</span>
+        <h1>Learn languages on your terms with <span class="accent-text">Atom Translate</span></h1>
+        <p class="hero-lede">Build your own vocabulary, study it with flashcards, quizzes, writing and matching modes, and keep it all on your device — sync and community sharing are there when you want them, never required.</p>
+        <div class="hero-ctas">
+          <span class="btn-store" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>
+            <span class="store-copy"><small>Coming soon</small><strong>Google Play</strong></span>
+          </span>
+          <span class="btn-store" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>
+            <span class="store-copy"><small>Coming soon</small><strong>App Store</strong></span>
+          </span>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>4</strong><span>Study modes</span></div>
+          <div class="stat"><strong>100%</strong><span>Works offline</span></div>
+          <div class="stat"><strong>4</strong><span>Platforms</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-card is-accent">
+              <span class="word">ephemeral</span>
+              <span class="translation">ефемерний</span>
+            </div>
+            <div class="phone-card">
+              <span class="word">resilience</span>
+              <span class="translation">стійкість</span>
+            </div>
+            <div class="phone-card">
+              <span class="word">threshold</span>
+              <span class="translation">поріг</span>
+            </div>
+            <div class="phone-progress"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Features</span>
+        <h2>Everything you need to actually remember new words</h2>
+        <p>Atom Translate stores your vocabulary locally by default, so it works with no account and no connection — with cloud features available whenever you want them.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>
+          </div>
+          <h3>Offline-first storage</h3>
+          <p>Folders, sections, words, and progress live in a local database on your device — no account required to start learning.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v6M12 15v6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M4.9 19.1l4.2-4.2M14.9 9.1l4.2-4.2"/></svg>
+          </div>
+          <h3>Optional cloud sync</h3>
+          <p>Sign in when you want your folders, words, and progress synchronized across every device you own.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="16" r="3"/><path d="M10.5 9.5 14.5 14"/></svg>
+          </div>
+          <h3>Community decks</h3>
+          <p>Publish folders publicly, or download and clone decks other learners share, with your own progress tracked separately.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h11M4 12h16M4 18h7"/><circle cx="19" cy="6" r="2"/><circle cx="9" cy="18" r="2"/></svg>
+          </div>
+          <h3>Configurable translation</h3>
+          <p>Translate automatically, switch providers in Settings, or type every translation yourself in manual mode.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 1 1-6 0V6a3 3 0 0 1 3-3Z"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></svg>
+          </div>
+          <h3>Speech-to-text & TTS</h3>
+          <p>Dictate words and hear pronunciations using your device's built-in speech services.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v13m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          </div>
+          <h3>Your data, exportable</h3>
+          <p>Export your entire vocabulary to CSV at any time — your words are never locked into the app.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="modes">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Study modes</span>
+        <h2>Four ways to move words into long-term memory</h2>
+        <p>Switch modes per session, or let a folder cycle through all four as your mastery level improves.</p>
+      </div>
+      <div class="mode-list">
+        <div class="mode-item">
+          <span class="mode-index">01</span>
+          <h3>Flashcards</h3>
+          <p>Flip through original and translation, and mark how well you knew each word.</p>
+        </div>
+        <div class="mode-item">
+          <span class="mode-index">02</span>
+          <h3>Quiz</h3>
+          <p>Pick the correct translation from multiple choice to test quick recall.</p>
+        </div>
+        <div class="mode-item">
+          <span class="mode-index">03</span>
+          <h3>Writing</h3>
+          <p>Type the translation from memory for the strongest retention.</p>
+        </div>
+        <div class="mode-item">
+          <span class="mode-index">04</span>
+          <h3>Matching</h3>
+          <p>Pair originals with translations against the clock.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="download">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>Ready to start building your vocabulary?</h2>
+          <p>Atom Translate is launching soon on Android, iOS, macOS, and Windows.</p>
+        </div>
+        <div class="cta-actions">
+          <span class="btn-store" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>
+            <span class="store-copy"><small>Coming soon</small><strong>Google Play</strong></span>
+          </span>
+          <span class="btn-store" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>
+            <span class="store-copy"><small>Coming soon</small><strong>App Store</strong></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="index.html">
+          <span class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+              <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5"/>
+              <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(60 12 12)"/>
+              <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(120 12 12)"/>
+            </svg>
+          </span>
+          Atom Translate
+        </a>
+        <p>An offline-first dictionary and language-learning app, built by ValentineOS.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#modes">Study modes</a>
+          <a href="#download">Download</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="report.html">Report a problem</a>
+          <a href="mailto:gandribidav@gmail.com">Contact email</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy-policy.html">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 ValentineOS — Atom Translate</span>
+      <span>Made in Ukraine</span>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

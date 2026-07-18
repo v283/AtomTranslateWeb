@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/valentine/Documents/GitHub/AtomTranslateWeb log --all --oneline)",
+      "Bash(git -C /Users/valentine/Documents/GitHub/AtomTranslateWeb branch -a)",
+      "Bash(git -C /Users/valentine/Documents/GitHub/AtomTranslateWeb remote -v)",
+      "Bash(git -C /Users/valentine/Documents/GitHub/AtomTranslateWeb show --stat HEAD)",
+      "Bash(npm -v)",
+      "Bash(npx --yes wrangler --version)",
+      "Bash(npx --yes sharp-cli --version)",
+      "Bash(npx --yes sharp-cli -i og-image.svg -o og-image.png resize 1200 630)",
+      "Bash(git -C /Users/valentine/Documents/GitHub/AtomTranslateWeb diff --no-color privacy-policy.html)",
+      "Bash(grep -viE '<|^\\\\+$|^-$')",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__kv_namespaces_list",
+      "Bash(npx --yes wrangler kv namespace create --help)",
+      "Bash(ls -la ~/Library/Caches/ms-playwright 2>/dev/null | head -20; echo \"---\"; find / -maxdepth 3 -iname \"*playwright*\" 2>/dev/null | head; echo \"---chrome---\"; ls /Applications | grep -i chrom)",
+      "Read(//Users/valentine/Library/Caches/**)",
+      "Read(//Applications/**)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --screenshot=\"/private/tmp/claude-501/-Users-valentine-Documents-GitHub-AtomTranslateWeb/5c281b19-4bcb-4b3f-b024-8ebd70088415/scratchpad/index-375.png\" --window-size=375,1400 \"file://$\\(pwd\\)/index.html\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(node debug.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/index.html)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/index.html 375 index-375-full.png)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/index.html 1440 index-1440-full.png)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/report.html 375 report-375-full.png)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/report.html 1440 report-1440-full.png)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/privacy-policy.html 375 privacy-375-full.png)",
+      "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/privacy-policy.html 1440 privacy-1440-full.png)",
+      "Bash(npx --yes wrangler whoami)",
+      "Bash(npx --yes wrangler pages project create --help)"
+    ]
+  }
+}

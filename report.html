@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a problem — Atom Translate</title>
+<meta name="description" content="Report a bug, translation issue, or feature request for Atom Translate. Your report goes straight to the developer.">
+<link rel="canonical" href="https://atomtranslate.valentineos.pp.ua/report.html">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Report a problem — Atom Translate">
+<meta property="og:description" content="Report a bug, translation issue, or feature request for Atom Translate.">
+<meta property="og:url" content="https://atomtranslate.valentineos.pp.ua/report.html">
+<meta property="og:image" content="https://atomtranslate.valentineos.pp.ua/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Report a problem — Atom Translate">
+<meta name="twitter:description" content="Report a bug, translation issue, or feature request for Atom Translate.">
+<meta name="twitter:image" content="https://atomtranslate.valentineos.pp.ua/og-image.png">
+
+<meta name="theme-color" content="#10131a">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href="index.html">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(60 12 12)"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.7" stroke="currentColor" stroke-width="1.5" transform="rotate(120 12 12)"/>
+        </svg>
+      </span>
+      Atom Translate
+    </a>
+    <nav class="site-nav">
+      <a href="index.html#features">Features</a>
+      <a href="index.html#modes">Study modes</a>
+      <a href="index.html#download">Download</a>
+      <a href="report.html">Report a bug</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-ghost" href="index.html">Back home</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Support</span>
+      <h1>Report a problem</h1>
+      <p>Found a bug, a bad translation, or something that just doesn't feel right? Tell us what happened — reports go straight to the developer.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container report-layout">
+      <form class="report-form" id="report-form" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="type">Report type</label>
+            <select id="type" name="type" required>
+              <option value="bug">Bug report</option>
+              <option value="translation">Translation issue</option>
+              <option value="feature">Feature request</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform" required>
+              <option value="android">Android</option>
+              <option value="ios">iOS</option>
+              <option value="macos">macOS</option>
+              <option value="windows">Windows</option>
+              <option value="web">Web</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="email">Email <span class="hint">(optional, for follow-up)</span></label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="version">App version <span class="hint">(optional)</span></label>
+            <input type="text" id="version" name="version" placeholder="e.g. 1.2.0">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="description">What happened?</label>
+          <textarea id="description" name="description" required placeholder="Steps to reproduce, what you expected, and what actually happened."></textarea>
+        </div>
+
+        <!-- Honeypot field: hidden from real users, catches basic bots -->
+        <div class="form-honeypot" aria-hidden="true">
+          <label for="company">Company</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div id="form-status" class="form-status" role="status"></div>
+
+        <div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Send report</button>
+        </div>
+        <p class="form-note">Reports are stored to be reviewed by the developer and are not shared with third parties.</p>
+      </form>
+
+      <aside class="report-side">
+        <div class="side-card">
+          <h3>Prefer email?</h3>
+          <p>Write directly to <a href="mailto:gandribidav@gmail.com">gandribidav@gmail.com</a> — same inbox this form delivers to.</p>
+        </div>
+        <div class="side-card">
+          <h3>Before you report</h3>
+          <p>For translation issues, note the source text, the language pair, and which provider you had selected in Settings — it helps track the problem down faster.</p>
+        </div>
+        <div class="side-card">
+          <h3>Data & privacy</h3>
+          <p>Submitting this form sends your report and optional email to the developer for the sole purpose of resolving the issue. See the <a href="privacy-policy.html">Privacy Policy</a> for details.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 ValentineOS — Atom Translate</span>
+      <a href="privacy-policy.html">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const form = document.getElementById('report-form');
+  const statusEl = document.getElementById('form-status');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    // Honeypot: if filled, silently drop without hitting the API.
+    if (form.company.value) {
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    statusEl.className = 'form-status';
+
+    const payload = {
+      type: form.type.value,
+      platform: form.platform.value,
+      email: form.email.value.trim(),
+      version: form.version.value.trim(),
+      description: form.description.value.trim(),
+    };
+
+    try {
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      form.reset();
+      statusEl.textContent = 'Thanks — your report was sent. We read every one.';
+      statusEl.className = 'form-status is-visible is-success';
+    } catch (err) {
+      statusEl.textContent = 'Something went wrong. Please email gandribidav@gmail.com instead.';
+      statusEl.className = 'form-status is-visible is-error';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send report';
+    }
+  });
+</script>
+
+</body>
+</html>
