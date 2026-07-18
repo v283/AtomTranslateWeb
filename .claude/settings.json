@@ -28,7 +28,10 @@
       "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/privacy-policy.html 375 privacy-375-full.png)",
       "Bash(node shot.js /Users/valentine/Documents/GitHub/AtomTranslateWeb/privacy-policy.html 1440 privacy-1440-full.png)",
       "Bash(npx --yes wrangler whoami)",
-      "Bash(npx --yes wrangler pages project create --help)"
+      "Bash(npx --yes wrangler pages project create --help)",
+      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha appicon.png)",
+      "Bash(node -e ' *)",
+      "Bash(npx --yes wrangler kv namespace create REPORTS --binding REPORTS --update-config)"
     ]
   }
 }

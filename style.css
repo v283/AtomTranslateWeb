@@ -1,20 +1,25 @@
 /* Atom Translate — shared design system
-   Dark theme · teal accent · Space Grotesk / Inter / IBM Plex Mono */
+   Matches the app's Dark theme (TranslateLearn/Resources/Theme/DarkTheme.xaml)
+   Space Grotesk / Inter / IBM Plex Mono */
 
 :root {
-  --bg: #10131a;
-  --bg-elevated: #161b25;
-  --bg-card: #151a23;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --text: #e9edf4;
-  --text-muted: #929bb0;
-  --text-faint: #656e82;
-  --accent: #4fd1c5;
-  --accent-dim: #2c9d94;
-  --accent-soft: rgba(79, 209, 197, 0.12);
-  --accent-soft-strong: rgba(79, 209, 197, 0.22);
-  --danger: #f2836b;
+  --bg: #121316;
+  --bg-elevated: #1c1d22;
+  --bg-card: #1c1d22;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: #33353b;
+  --text: #f0f0ec;
+  --text-muted: #a8a79e;
+  --text-faint: #7c7a70;
+  --accent: #378add;
+  --accent-dim: #185fa5;
+  --accent-soft: #1b3349;
+  --accent-soft-strong: rgba(55, 138, 221, 0.35);
+  --danger: #f09595;
+  --danger-tint: #3a1f1f;
+  --danger-text: #e8837d;
+  --success: #5dcaa5;
+  --success-tint: #223019;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
@@ -48,8 +53,8 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 82% -10%, rgba(79, 209, 197, 0.16), transparent 60%),
-    radial-gradient(45% 40% at 8% 0%, rgba(79, 209, 197, 0.08), transparent 60%);
+    radial-gradient(60% 50% at 82% -10%, rgba(55, 138, 221, 0.16), transparent 60%),
+    radial-gradient(45% 40% at 8% 0%, rgba(55, 138, 221, 0.08), transparent 60%);
   pointer-events: none;
 }
 
@@ -132,13 +137,13 @@ ul {
 
 .btn-primary {
   background: var(--accent);
-  color: #0a1210;
-  box-shadow: 0 12px 24px -10px rgba(79, 209, 197, 0.55);
+  color: #ffffff;
+  box-shadow: 0 12px 24px -10px rgba(55, 138, 221, 0.55);
 }
 
 .btn-primary:hover {
-  background: #63dbd0;
-  box-shadow: 0 14px 28px -8px rgba(79, 209, 197, 0.65);
+  background: #5ba3e8;
+  box-shadow: 0 14px 28px -8px rgba(55, 138, 221, 0.65);
 }
 
 .btn-ghost {
@@ -209,19 +214,17 @@ ul {
 .logo-mark {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: 21%;
   flex-shrink: 0;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6fe4d9 0%, #4fd1c5 45%, #227972 100%);
-  box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.3), 0 10px 22px -8px rgba(79, 209, 197, 0.7);
+  box-shadow: 0 0 0 1px rgba(55, 138, 221, 0.3), 0 10px 22px -8px rgba(55, 138, 221, 0.7);
 }
 
-.logo-mark svg {
-  width: 19px;
-  height: 19px;
-  color: #0a1210;
+.logo-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ---------- Header ---------- */
@@ -231,7 +234,7 @@ ul {
   top: 0;
   z-index: 40;
   border-bottom: 1px solid var(--border);
-  background: rgba(16, 19, 26, 0.78);
+  background: rgba(18, 19, 22, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -341,9 +344,9 @@ ul {
   aspect-ratio: 9 / 18.5;
   border-radius: 40px;
   padding: 14px;
-  background: linear-gradient(160deg, #1b212c, #10131a 65%);
+  background: linear-gradient(160deg, #23252c, #121316 65%);
   border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-card), 0 0 0 1px rgba(79, 209, 197, 0.08);
+  box-shadow: var(--shadow-card), 0 0 0 1px rgba(55, 138, 221, 0.08);
   position: relative;
 }
 
@@ -525,7 +528,7 @@ ul {
 .cta-band {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-strong);
-  background: linear-gradient(135deg, rgba(79, 209, 197, 0.14), rgba(79, 209, 197, 0.02));
+  background: linear-gradient(135deg, rgba(55, 138, 221, 0.14), rgba(55, 138, 221, 0.02));
   padding: 52px;
   display: flex;
   align-items: center;
@@ -732,15 +735,15 @@ ul {
 }
 
 .form-status.is-success {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px solid var(--accent-soft-strong);
+  background: var(--success-tint);
+  color: var(--success);
+  border: 1px solid rgba(93, 202, 165, 0.35);
 }
 
 .form-status.is-error {
-  background: rgba(242, 131, 107, 0.12);
-  color: var(--danger);
-  border: 1px solid rgba(242, 131, 107, 0.32);
+  background: var(--danger-tint);
+  color: var(--danger-text);
+  border: 1px solid rgba(240, 149, 149, 0.32);
 }
 
 .report-side {

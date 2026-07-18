@@ -2,8 +2,6 @@ name = "atomtranslate-web"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "."
 
-# Created by: npx wrangler kv namespace create REPORTS --binding REPORTS --update-config
-# Run that once before the first deploy — it fills in the id below automatically.
 [[kv_namespaces]]
 binding = "REPORTS"
-id = "REPLACE_AFTER_RUNNING_KV_NAMESPACE_CREATE"
+id = "dea1599c2fb7441f992613bcc6384feb"
