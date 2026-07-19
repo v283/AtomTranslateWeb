@@ -31,7 +31,15 @@
       "Bash(npx --yes wrangler pages project create --help)",
       "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha appicon.png)",
       "Bash(node -e ' *)",
-      "Bash(npx --yes wrangler kv namespace create REPORTS --binding REPORTS --update-config)"
+      "Bash(npx --yes wrangler kv namespace create REPORTS --binding REPORTS --update-config)",
+      "Bash(npx --yes wrangler pages project create atomtranslate-web --production-branch main)",
+      "Bash(npx --yes wrangler pages deploy --help)",
+      "Bash(npx --yes wrangler pages deploy . --project-name=atomtranslate-web --branch=main --commit-dirty=true)",
+      "Bash(curl -s -o /dev/null -w \"atomtranslate-web.pages.dev -> %{http_code}\\\\n\" https://atomtranslate-web.pages.dev/)",
+      "Bash(curl -s -o /dev/null -w \"og-image.png -> %{http_code}\\\\n\" https://atomtranslate-web.pages.dev/og-image.png)",
+      "Bash(curl -s -X POST https://atomtranslate-web.pages.dev/api/report -H \"Content-Type: application/json\" -d '{\"type\":\"other\",\"platform\":\"web\",\"description\":\"deploy smoke test - safe to ignore/delete\"}' -w \"\\\\napi/report -> %{http_code}\\\\n\")",
+      "Bash(npx --yes wrangler pages domain add atomtranslate.valentineos.pp.ua --project-name=atomtranslate-web)",
+      "Bash(npx --yes wrangler pages project --help)"
     ]
   }
 }
