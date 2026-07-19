@@ -331,7 +331,7 @@ ul {
   letter-spacing: 0.06em;
 }
 
-/* Hero visual: abstract phone/card mockup built with CSS, no external assets */
+/* Hero visual: real app screenshot, cropped to the device only */
 
 .hero-visual {
   position: relative;
@@ -339,80 +339,46 @@ ul {
   justify-content: center;
 }
 
-.phone-mock {
+.hero-shot {
   width: min(100%, 300px);
-  aspect-ratio: 9 / 18.5;
-  border-radius: 40px;
-  padding: 14px;
-  background: linear-gradient(160deg, #23252c, #121316 65%);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-card), 0 0 0 1px rgba(55, 138, 221, 0.08);
-  position: relative;
+  height: auto;
+  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.55));
 }
 
-.phone-mock::before {
-  content: "";
-  position: absolute;
-  top: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 48px;
-  height: 5px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.14);
+/* ---------- Screenshot gallery ---------- */
+
+.shot-gallery {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -24px;
+  padding: 4px 24px 12px;
 }
 
-.phone-screen {
-  height: 100%;
+.shot-item {
+  flex: 0 0 auto;
+  width: 200px;
+  scroll-snap-align: start;
+}
+
+.shot-item img {
+  width: 100%;
+  height: auto;
   border-radius: 28px;
-  background: var(--bg-elevated);
-  padding: 40px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.45));
 }
 
-.phone-card {
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.shot-item h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
 }
 
-.phone-card .word {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-}
-
-.phone-card .translation {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--accent);
-}
-
-.phone-card.is-accent {
-  background: var(--accent-soft);
-  border-color: var(--accent-soft-strong);
-}
-
-.phone-progress {
-  margin-top: auto;
-  height: 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.phone-progress span {
-  display: block;
-  width: 68%;
-  height: 100%;
-  background: var(--accent);
+.shot-item p {
+  font-size: 0.86rem;
+  color: var(--text-muted);
 }
 
 /* ---------- Sections ---------- */
@@ -889,7 +855,7 @@ ul {
     order: -1;
   }
 
-  .phone-mock {
+  .hero-shot {
     width: 220px;
     margin: 0 auto;
   }
