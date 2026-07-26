@@ -168,6 +168,25 @@ ul {
   color: var(--text-muted);
   cursor: not-allowed;
   font-size: 0.9rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-store.is-live {
+  cursor: pointer;
+}
+
+.btn-store.is-live:hover {
+  border-color: var(--accent);
+}
+
+.btn-store.is-live:active {
+  transform: translateY(1px);
+}
+
+.btn-store.is-live svg,
+.btn-store.is-live .store-copy strong {
+  color: var(--text);
 }
 
 .btn-store svg {
