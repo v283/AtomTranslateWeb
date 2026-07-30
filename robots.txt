@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://atomtranslate.valentineos.pp.ua/sitemap.xml
