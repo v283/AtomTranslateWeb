@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.valentineos.atomtranslate",
+      "sha256_cert_fingerprints": ["8B:CE:0B:23:97:AE:39:C9:6C:19:6D:15:13:6A:C1:E7:87:92:47:04:BA:6F:D5:51:B7:87:CC:F8:F9:68:9F:54"]
+    }
+  }
+]

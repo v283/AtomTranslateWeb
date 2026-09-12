@@ -1,0 +1,4 @@
+# The AASA file has no extension (required by Apple), so Pages would otherwise serve it as
+# application/octet-stream — iOS requires application/json for Universal Links verification.
+/.well-known/apple-app-site-association
+  Content-Type: application/json

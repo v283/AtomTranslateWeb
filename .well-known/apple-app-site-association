@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["7267U5SD95.com.valentineos.atomtranslate"],
+        "components": [
+          { "/": "/community/*", "comment": "Community folder preview deep link" }
+        ]
+      }
+    ]
+  }
+}
