@@ -2,3 +2,12 @@
 # application/octet-stream — iOS requires application/json for Universal Links verification.
 /.well-known/apple-app-site-association
   Content-Type: application/json
+
+# Базові заголовки безпеки для всього сайту. CSP свідомо немає: сторінки мають inline-скрипти
+# (community-сторінка) і Google Fonts — жорсткий CSP тут потребує окремого переписування.
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

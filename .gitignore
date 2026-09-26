@@ -1,3 +1,8 @@
 .wrangler/
 node_modules/
 .DS_Store
+
+# Локальні секрети (Pages Functions читають .dev.vars у wrangler dev). Ніколи не в git.
+.env
+.env.*
+.dev.vars
