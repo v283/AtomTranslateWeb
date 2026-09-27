@@ -9,31 +9,27 @@ import { SITE_ORIGIN, fetchPublicFolderIndex } from "./_lib/community.js";
 
 const MAX_DECKS = 5000;
 
-// The three landing locales are alternates of each other (mirrors the <link rel="alternate">
-// tags in index.html, uk/index.html and ru/index.html).
+// The landing locales are alternates of each other (mirrors the <link rel="alternate">
+// tags in index.html and uk/index.html).
 const LANDING_ALTERNATES = [
   { hreflang: "en", path: "/" },
   { hreflang: "uk", path: "/uk/" },
-  { hreflang: "ru", path: "/ru/" },
   { hreflang: "x-default", path: "/" },
 ];
 
-// The Quizlet import tutorial exists in the same three locales as the landing page.
+// The Quizlet import tutorial exists in the same locales as the landing page.
 const TUTORIAL_ALTERNATES = [
   { hreflang: "en", path: "/tutorial-quizlet-import.html" },
   { hreflang: "uk", path: "/uk/tutorial-quizlet-import.html" },
-  { hreflang: "ru", path: "/ru/tutorial-quizlet-import.html" },
   { hreflang: "x-default", path: "/tutorial-quizlet-import.html" },
 ];
 
 const STATIC_PAGES = [
   { path: "/", alternates: LANDING_ALTERNATES },
   { path: "/uk/", alternates: LANDING_ALTERNATES },
-  { path: "/ru/", alternates: LANDING_ALTERNATES },
   { path: "/support.html" },
   { path: "/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/uk/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
-  { path: "/ru/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/report.html" },
   { path: "/privacy-policy.html" },
 ];
