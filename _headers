@@ -3,9 +3,13 @@
 /.well-known/apple-app-site-association
   Content-Type: application/json
 
-# Базові заголовки безпеки для всього сайту. CSP свідомо немає: сторінки мають inline-скрипти
-# (community-сторінка) і Google Fonts — жорсткий CSP тут потребує окремого переписування.
+# Заголовки безпеки для статичних сторінок. Inline-скриптів немає — JS лише з /assets/*.js,
+# тому script-src 'self' без 'unsafe-inline'. <script type="application/ld+json"> — це дані,
+# CSP їх не блокує. style-src/font-src відкриті для Google Fonts.
+# На відповіді Pages Functions (community-сторінка) цей файл НЕ діє — там свій набір,
+# PAGE_SECURITY_HEADERS у functions/_lib/community.js; тримати обидва синхронно.
 /*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

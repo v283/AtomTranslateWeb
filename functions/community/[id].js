@@ -15,7 +15,7 @@
 // uncacheable. functions/sitemap.xml.js lists the same /community/{short_id} URLs.
 
 import {
-  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN,
+  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, PAGE_SECURITY_HEADERS,
   escapeHtml, wordCountLabel,
   fetchFolderByShortId, fetchSectionsWithCounts, fetchWordPreview,
 } from "../_lib/community.js";
@@ -154,73 +154,10 @@ ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` :
 </head>
 <body>
 ${bodyHtml}
-${includeScript ? `<script>${ACCORDION_SCRIPT}</script>` : ""}
+${includeScript ? `<script src="/assets/community.js" defer></script>` : ""}
 </body>
 </html>`;
 }
-
-// Vanilla JS, no framework/CDN dependency. One fetch per section, cached in memory so
-// collapsing and re-expanding the same section never re-fetches it.
-const ACCORDION_SCRIPT = `
-(function () {
-  var cache = {};
-  document.querySelectorAll(".section-head").forEach(function (head) {
-    head.addEventListener("click", function () {
-      var section = head.closest(".section");
-      var id = section.getAttribute("data-id");
-      var isOpen = section.classList.contains("open");
-      document.querySelectorAll(".section.open").forEach(function (other) {
-        if (other !== section) other.classList.remove("open");
-      });
-      section.classList.toggle("open", !isOpen);
-      head.setAttribute("aria-expanded", String(!isOpen));
-      if (isOpen || cache[id]) return;
-      load(section);
-    });
-  });
-
-  // The server-rendered preview section offers "Show all N words", which swaps the text-only
-  // preview for the full list (with thumbnails) from the same endpoint.
-  document.querySelectorAll(".section-more").forEach(function (button) {
-    button.addEventListener("click", function () {
-      load(button.closest(".section"));
-    });
-  });
-
-  function load(section) {
-    var id = section.getAttribute("data-id");
-    var body = section.querySelector(".section-body");
-    body.innerHTML = '<div class="section-state">Loading…</div>';
-    fetch("/api/community/" + window.__shortId + "/sections/" + id)
-      .then(function (r) { if (!r.ok) throw new Error("bad response"); return r.json(); })
-      .then(function (data) {
-        cache[id] = true;
-        if (!data.words || data.words.length === 0) {
-          body.innerHTML = '<div class="section-state">No words in this section.</div>';
-          return;
-        }
-        body.innerHTML = data.words.map(function (w) {
-          var img = w.imageUrl
-            ? '<img class="word-thumb" src="' + escapeHtml(w.imageUrl) + '" alt="">'
-            : "";
-          return '<div class="word-row">' + img +
-            '<div class="word-text"><span class="word-original">' + escapeHtml(w.original) +
-            '</span><span class="word-translation">' + escapeHtml(w.translation) + '</span></div></div>';
-        }).join("");
-      })
-      .catch(function () {
-        delete cache[id];
-        body.innerHTML = '<div class="section-state">Couldn\\'t load this section.</div>';
-      });
-  }
-
-  function escapeHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
-})();
-`;
 
 function chevronSvg() {
   return `<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
@@ -235,7 +172,7 @@ function storesHtml(webAppUrl) {
     <a class="btn btn-web" href="${escapeHtml(webAppUrl)}">Open in web app</a>` : ""}`;
 }
 
-const NO_STORE_HTML = { "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "no-store" };
+const NO_STORE_HTML = { ...PAGE_SECURITY_HEADERS, "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "no-store" };
 
 function notFoundPage(shortId, url) {
   const html = pageShell({
@@ -398,7 +335,7 @@ export async function onRequestGet({ params, request }) {
     jsonLd,
     includeScript: sections.length > 0,
     bodyHtml: `
-    <main class="card">
+    <main class="card" data-short-id="${escapeHtml(folder.short_id)}">
       <div class="avatar" aria-hidden="true">${escapeHtml(initial)}</div>
       <h1>${escapeHtml(folder.name)}</h1>
       <p class="meta">${authorName ? `by ${escapeHtml(authorName)} · ` : ""}${escapeHtml(wordCountLabel(wordCount))}</p>
@@ -407,13 +344,13 @@ export async function onRequestGet({ params, request }) {
       ${storesHtml(webAppUrl)}
       <p class="hint">Already have Atom Translate? Opening this link on your phone opens the deck directly.</p>
       ${sectionsHtml}
-    </main>
-    <script>window.__shortId = ${safeJson(folder.short_id)};</script>`,
+    </main>`,
   });
 
   return new Response(html, {
     status: 200,
     headers: {
+      ...PAGE_SECURITY_HEADERS,
       "Content-Type": "text/html; charset=UTF-8",
       "Cache-Control": "public, max-age=300, s-maxage=3600",
     },

@@ -15,6 +15,21 @@ export const APP_STORE_URL = "https://apps.apple.com/ua/app/atom-translate-learn
 export const SITE_ORIGIN = "https://atomtranslate.com";
 export const WEB_APP_ORIGIN = "https://app.atomtranslate.com";
 
+// Security headers for HTML rendered by Functions. Cloudflare Pages does NOT apply _headers to
+// Function responses, so these mirror the site-wide rules there and must be kept in sync.
+// script-src 'self' only: the page's own JS lives in /assets/community.js; the JSON-LD block is
+// type="application/ld+json", which is data and never executed. style-src needs 'unsafe-inline'
+// for the page's <style> block — that grants no script execution. img-src allows Supabase for
+// the signed word thumbnails loaded by the accordion.
+export const PAGE_SECURITY_HEADERS = {
+  "Content-Security-Policy": `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL}; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+};
+
 function supabaseHeaders() {
   return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 }
