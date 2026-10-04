@@ -531,7 +531,7 @@ ul {
 
 .mode-list {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -558,6 +558,32 @@ ul {
 .mode-item p {
   color: var(--text-muted);
   font-size: 0.88rem;
+}
+
+.mode-callout {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(55, 138, 221, 0.14), rgba(55, 138, 221, 0.02));
+}
+
+.mode-callout .feature-icon {
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.mode-callout h3 {
+  font-size: 1.08rem;
+  margin-bottom: 6px;
+}
+
+.mode-callout p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
 }
 
 /* ---------- CTA band ---------- */
