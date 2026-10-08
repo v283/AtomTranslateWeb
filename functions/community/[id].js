@@ -70,6 +70,7 @@ ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` :
     --bg: #121316; --bg-elevated: #1c1d22; --bg-row: #202127; --border: rgba(255,255,255,0.10);
     --text: #f0f0ec; --text-muted: #a8a79e; --text-faint: #7c7a70;
     --accent: #378add; --accent-dim: #185fa5; --accent-soft: #1b3349;
+    --accent-soft-strong: rgba(55, 138, 221, 0.35); --border-strong: #33353b;
     --radius-lg: 22px; --radius-md: 14px; --radius-sm: 8px;
   }
   * { box-sizing: border-box; }
@@ -95,15 +96,34 @@ ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` :
     font-size: 12px; padding: 4px 10px; border-radius: 999px;
   }
   .summary { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0 0 20px; }
+  /* Store buttons: the same shape as .btn-store on the main site (style.css), so the
+     landing and atomtranslate.com read as one product. */
   .stores { display: flex; flex-direction: column; gap: 10px; }
-  .btn {
-    display: flex; align-items: center; justify-content: center; min-height: 44px;
-    padding: 12px 16px; border-radius: var(--radius-sm); text-decoration: none;
-    font-weight: 600; font-size: 15px;
+  .btn-store {
+    display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px;
+    padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong);
+    background: var(--bg-row); color: var(--text); text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-web { margin-top: 10px; background: var(--accent-soft); border: 1px solid var(--accent-dim); color: var(--text); }
+  .btn-store:hover { border-color: var(--accent); }
+  .btn-store:active { transform: translateY(1px); }
+  .btn-store:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-store svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .store-copy { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
+  .store-copy small {
+    font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-faint);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .store-copy strong { font-size: 15px; font-weight: 600; }
+  /* The no-install option: accent-tinted so it doesn't read as a third store. */
+  .btn-store.is-web { margin-top: 10px; background: var(--accent-soft); border-color: var(--accent-soft-strong); }
+  .btn-store.is-web svg { color: var(--accent); }
+  .btn-store.is-web:hover { border-color: var(--accent); }
+  .beta-tag {
+    padding: 2px 7px; border-radius: 999px; border: 1px solid var(--accent-soft-strong);
+    background: var(--accent-soft); color: var(--accent); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
   .hint { color: var(--text-faint); font-size: 12px; margin-top: 18px; }
 
   /* Sections accordion */
@@ -148,7 +168,7 @@ ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` :
   @media (min-width: 640px) {
     .card { padding: 40px 44px; }
     .stores { flex-direction: row; }
-    .stores .btn { flex: 1; }
+    .stores .btn-store { flex: 1; }
   }
 </style>
 </head>
@@ -163,13 +183,28 @@ function chevronSvg() {
   return `<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
 }
 
+// Icons and wording match the .hero-ctas buttons in index.html.
+const PLAY_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>`;
+const APPLE_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>`;
+const GLOBE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9s1.3-6.3 3.8-9Z"/></svg>`;
+
 function storesHtml(webAppUrl) {
   return `
     <div class="stores">
-      <a class="btn btn-primary" href="${PLAY_STORE_URL}">Get it on Google Play</a>
-      <a class="btn btn-secondary" href="${APP_STORE_URL}">Download on the App Store</a>
+      <a class="btn-store" href="${PLAY_STORE_URL}">
+        ${PLAY_ICON}
+        <span class="store-copy"><small>Get it on</small><strong>Google Play</strong></span>
+      </a>
+      <a class="btn-store" href="${APP_STORE_URL}">
+        ${APPLE_ICON}
+        <span class="store-copy"><small>Download on the</small><strong>App Store</strong></span>
+      </a>
     </div>${webAppUrl ? `
-    <a class="btn btn-web" href="${escapeHtml(webAppUrl)}">Open in web app</a>` : ""}`;
+    <a class="btn-store is-web" href="${escapeHtml(webAppUrl)}">
+      ${GLOBE_ICON}
+      <span class="store-copy"><small>In your browser</small><strong>Open in web app</strong></span>
+      <span class="beta-tag">Beta</span>
+    </a>` : ""}`;
 }
 
 const NO_STORE_HTML = { ...PAGE_SECURITY_HEADERS, "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "no-store" };
