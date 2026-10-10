@@ -83,10 +83,10 @@ ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` :
     width: 100%; max-width: 560px; background: var(--bg-elevated); border: 1px solid var(--border);
     border-radius: var(--radius-lg); padding: 32px 28px; text-align: center;
   }
+  /* App icon in the .logo-mark style of the main site, until decks get their own picture. */
   .avatar {
-    width: 56px; height: 56px; border-radius: 50%; background: var(--accent-dim);
-    color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center;
-    justify-content: center; margin: 0 auto 16px;
+    display: block; width: 56px; height: 56px; border-radius: 21%; margin: 0 auto 16px;
+    box-shadow: 0 0 0 1px rgba(55, 138, 221, 0.3), 0 10px 22px -8px rgba(55, 138, 221, 0.7);
   }
   h1 { font-size: 22px; margin: 0 0 4px; }
   .meta { color: var(--text-muted); font-size: 14px; margin: 0 0 4px; }
@@ -287,7 +287,6 @@ export async function onRequestGet({ params, request }) {
   const webAppUrl = `${WEB_APP_ORIGIN}/community/folder/${encodeURIComponent(canonicalShortId)}`;
 
   const authorName = folder.author_name || "";
-  const initial = authorName ? authorName[0].toUpperCase() : "?";
   const wordCount = Number(folder.word_count) || 0;
   const sectionCount = Number(folder.section_count) || sections.length;
   const language = folder.language || "";
@@ -371,7 +370,7 @@ export async function onRequestGet({ params, request }) {
     includeScript: sections.length > 0,
     bodyHtml: `
     <main class="card" data-short-id="${escapeHtml(folder.short_id)}">
-      <div class="avatar" aria-hidden="true">${escapeHtml(initial)}</div>
+      <img class="avatar" src="/appicon.png" width="56" height="56" alt="" aria-hidden="true">
       <h1>${escapeHtml(folder.name)}</h1>
       <p class="meta">${authorName ? `by ${escapeHtml(authorName)} · ` : ""}${escapeHtml(wordCountLabel(wordCount))}</p>
       ${badges.length ? `<div class="badges">${badges.map((b) => `<span class="badge">${escapeHtml(b)}</span>`).join("")}</div>` : ""}
