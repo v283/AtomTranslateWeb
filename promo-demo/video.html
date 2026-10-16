@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/unbounded/latin-600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/unbounded/latin-700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/unbounded/cyrillic-600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/unbounded/cyrillic-700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/manrope/latin-700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/manrope/latin-800.css">
+<link rel="stylesheet" href="node_modules/@fontsource/manrope/cyrillic-700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/manrope/cyrillic-800.css">
+<link rel="stylesheet" href="../assets/demo.css">
+<style>
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; overflow: hidden; font-family: Manrope, sans-serif; }
+  .bg { position: absolute; inset: 0; background: var(--bg); overflow: hidden; }
+  .bg::before, .bg::after { content: ""; position: absolute; border-radius: 50%; background: var(--blob); }
+  .bg::before { width: 1300px; height: 1300px; left: -420px; top: -520px; }
+  .bg::after { width: 1000px; height: 1000px; right: -380px; bottom: -520px; opacity: .8; }
+  .bg[data-theme=paper] { --bg: #eef4ff; --blob: #d5e5ff; }
+  .bg[data-theme=navy]  { --bg: #0f2347; --blob: #17325f; }
+  .bg[data-theme=mint]  { --bg: #e0f3e4; --blob: #c6e8cd; }
+  .bg[data-theme=sand]  { --bg: #fdf0d8; --blob: #f9dfae; }
+  .bg[data-theme=hero]  { background: linear-gradient(135deg, #4f9bf7 0%, #2f6fe4 45%, #1f55c4 100%); --blob: rgba(255,255,255,.07); }
+
+  .sc { position: absolute; display: flex; flex-direction: column; justify-content: center; opacity: 0; visibility: hidden; }
+  .f169 .sc { width: 800px; top: 0; bottom: 0; }
+  .f916 .sc { left: 90px; right: 90px; top: 130px; height: 520px; justify-content: flex-start; }
+  .sc[data-theme=paper] { --fg: #0f2347; --kick: #2563d8; --mut: #3b5278; --chip: #d5e5ff; --chipfg: #0f2347; }
+  .sc[data-theme=navy]  { --fg: #ffffff; --kick: #ffd23f; --mut: #c9d6f0; --chip: #17325f; --chipfg: #c9d6f0; }
+  .sc[data-theme=mint]  { --fg: #0f2347; --kick: #2f9a52; --mut: #27466e; --chip: #c6e8cd; --chipfg: #27466e; }
+  .sc[data-theme=sand]  { --fg: #0f2347; --kick: #a9650f; --mut: #5a4a2a; --chip: #f9dfae; --chipfg: #5a4a2a; }
+  .sc[data-theme=hero]  { --fg: #ffffff; --kick: #ffd23f; --mut: #e6efff; --chip: rgba(255,255,255,.18); --chipfg: #fff; }
+  .kick { font: 800 28px/1 Manrope; letter-spacing: .14em; text-transform: uppercase; color: var(--kick); margin-bottom: 26px; position: relative; height: 30px; }
+  .f916 .kick { font-size: 32px; }
+  .kick > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+  .ttl { font: 700 84px/1.1 Unbounded, sans-serif; letter-spacing: -.025em; color: var(--fg); position: relative; }
+  .f916 .ttl { font-size: 90px; }
+  .ttl.stack { height: 110px; } .f916 .ttl.stack { height: 120px; }
+  .ttl.stack > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+  .sub { font: 800 38px/1.3 Manrope; color: var(--mut); margin-top: 22px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 44px; }
+  .chip { font: 600 28px/1 Unbounded; padding: 16px 26px; border-radius: 22px; background: var(--chip); color: var(--chipfg); }
+  .f916 .chip { font-size: 30px; }
+  .url { display: inline-block; align-self: flex-start; margin-top: 40px; font: 700 52px/1 Unbounded; letter-spacing: -.02em; color: #0f2347; background: #ffd23f; padding: 24px 40px; border-radius: 26px; }
+  .pills { display: flex; gap: 16px; margin-top: 34px; }
+  .pill { font: 800 30px/1 Manrope; color: #fff; border: 3px solid rgba(255,255,255,.7); border-radius: 999px; padding: 14px 32px; }
+  .logo { width: 150px; height: 150px; border-radius: 34px; margin-bottom: 36px; box-shadow: 0 20px 40px rgba(10,30,80,.35); }
+  .f916 .sc.out .ttl { font-size: 80px; } .f916 .sc.out .url { font-size: 46px; padding: 20px 34px; margin-top: 30px; } .f916 .sc.out .pills { margin-top: 26px; } .f916 .sc.out .sub { font-size: 34px; margin-top: 16px; }
+  .pw { position: absolute; left: 0; top: 0; width: 414px; height: 836px; transform-origin: 50% 50%; }
+  #atom-demo { width: 414px; max-width: none; margin: 0; }
+</style></head>
+<body>
+<div id="stage">
+  <div id="bgs"></div>
+  <div id="scs"></div>
+  <div class="pw"><div class="ad" id="atom-demo" data-lang="uk" data-bare="true" data-frames="frames-src/f"></div></div>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script>
+  var qs = new URLSearchParams(location.search);
+  document.getElementById('atom-demo').setAttribute('data-lang', qs.get('lang') === 'en' ? 'en' : 'uk');
+</script>
+<script src="../assets/demo.js"></script>
+<script src="video.js"></script>
+</body></html>

@@ -1,0 +1,5 @@
+node_modules/
+frames/
+frames-src/
+work/
+*.mp4

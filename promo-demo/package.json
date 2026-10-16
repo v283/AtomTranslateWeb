@@ -1,0 +1,17 @@
+{
+  "name": "atom-translate-promo-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 build.py",
+    "render:16x9": "node render.mjs 16x9 uk 60 frames/uk_16x9 && ffmpeg -y -framerate 60 -i frames/uk_16x9/f%05d.jpg -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -movflags +faststart atom-translate-demo-uk-16x9.mp4",
+    "render:9x16": "node render.mjs 9x16 uk 60 frames/uk_9x16 && ffmpeg -y -framerate 60 -i frames/uk_9x16/f%05d.jpg -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -movflags +faststart atom-translate-demo-uk-9x16.mp4",
+    "render:16x9:en": "node render.mjs 16x9 en 60 frames/en_16x9 && ffmpeg -y -framerate 60 -i frames/en_16x9/f%05d.jpg -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -movflags +faststart atom-translate-demo-en-16x9.mp4",
+    "render:9x16:en": "node render.mjs 9x16 en 60 frames/en_9x16 && ffmpeg -y -framerate 60 -i frames/en_9x16/f%05d.jpg -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -movflags +faststart atom-translate-demo-en-9x16.mp4"
+  },
+  "dependencies": {
+    "@fontsource/manrope": "^5.0.0",
+    "@fontsource/unbounded": "^5.0.0",
+    "playwright": "^1.50.0"
+  }
+}

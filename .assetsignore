@@ -4,3 +4,5 @@ wrangler.toml
 .gitignore
 .assetsignore
 screenshots/*.png
+
+promo-demo/

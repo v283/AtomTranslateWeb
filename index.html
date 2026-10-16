@@ -91,6 +91,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/demo.css">
 </head>
 <body>
 
@@ -149,7 +150,9 @@
         </div>
       </div>
       <div class="hero-visual">
-        <img class="hero-shot" src="screenshots/cropped/translate.png" alt="Atom Translate app: translating a word and saving it to a folder" width="750" height="1540">
+        <div class="ad" id="atom-demo" data-lang="en" data-src="assets/demo/atom-demo.mp4">
+          <img class="hero-shot" src="screenshots/cropped/translate.png" alt="Atom Translate app: translating a word and saving it to a folder" width="750" height="1540">
+        </div>
       </div>
     </div>
   </section>
@@ -446,5 +449,6 @@
   </div>
 </footer>
 
+<script src="assets/demo.js" defer></script>
 </body>
 </html>
