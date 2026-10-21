@@ -34,7 +34,8 @@
         import: ['Words from a picture', 'Snap a word list, review and import'],
         quizlet: ['Import from Quizlet', 'Bring your sets over as a PDF']
       },
-      modes: ['Flashcards', 'Quiz', 'Writing', 'Matching', 'True / False', 'Listening']
+      modes: ['Flashcards', 'Quiz', 'Writing', 'Matching', 'True / False', 'Listening'],
+      play: 'Play demo'
     },
     uk: {
       ch: {
@@ -51,7 +52,8 @@
         import: ['Слова з фото', 'Сфотографуй список, перевір і імпортуй'],
         quizlet: ['Імпорт із Quizlet', 'Перенеси свої набори через PDF']
       },
-      modes: ['Картки', 'Тест', 'Письмо', 'Пари', 'Правда чи ні', 'Аудіювання']
+      modes: ['Картки', 'Тест', 'Письмо', 'Пари', 'Правда чи ні', 'Аудіювання'],
+      play: 'Відтворити демо'
     }
   };
   var L = TXT[LANG];
@@ -65,7 +67,8 @@
   var h = '<div class="ad-stage"><div class="ad-phone"><div class="ad-screen">' +
     '<div class="ad-status"><span>9:41</span><span class="ad-sys">' + SYS + '</span></div><i class="ad-hole"></i>' +
     (FRAMES ? '<img class="ad-vid" alt="" decoding="sync">' :
-      '<video class="ad-vid" muted playsinline loop preload="auto" poster="' + POSTER + '" aria-label="Atom Translate demo"><source src="' + SRC.replace(/\.mp4$/, '.webm') + '" type="video/webm"><source src="' + SRC + '" type="video/mp4"></video>') +
+      '<video class="ad-vid" muted playsinline loop preload="auto" poster="' + POSTER + '" aria-label="Atom Translate demo"><source src="' + SRC.replace(/\.mp4$/, '.webm') + '" type="video/webm"><source src="' + SRC + '" type="video/mp4"></video>' +
+      '<button class="ad-play" type="button" aria-label="' + L.play + '"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z"/></svg></button>') +
     '</div></div></div>';
   if (!BARE) {
     h += '<div class="ad-cap">' + CH.map(function (c) {
@@ -122,18 +125,28 @@
   }
 
   /* ---------- відтворення ---------- */
+  /* reduced motion (на Windows — вимкнені «Ефекти анімації») лише вимикає автозапуск:
+     показуємо кнопку відтворення, а не застиглий постер без жодного способу запустити */
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var visible = true, userPaused = false, raf = 0;
+  var visible = true, userPaused = !AUTO || reduce, raf = 0;
+  var playBtn = root.querySelector('.ad-play');
 
+  function showPlay(on) { root.classList.toggle('is-paused', on); }
   function loop() { paint(vid.currentTime); raf = requestAnimationFrame(loop); }
   function sync() {
-    var want = AUTO && !reduce && visible && !document.hidden && !userPaused;
-    if (want && vid.paused) { var p = vid.play(); if (p && p.catch) p.catch(function () {}); }
+    var want = visible && !document.hidden && !userPaused;
+    if (want && vid.paused) {
+      var p = vid.play();
+      // автозапуск заблоковано (енергозбереження, політика браузера) — лишаємо кнопку
+      if (p && p.catch) p.catch(function () { showPlay(true); });
+    }
     else if (!want && !vid.paused) vid.pause();
     cancelAnimationFrame(raf);
     if (!vid.paused || !BARE) raf = requestAnimationFrame(loop);
   }
-  vid.addEventListener('playing', sync);
+  function toggle() { userPaused = !vid.paused; sync(); }
+  vid.addEventListener('playing', function () { showPlay(false); sync(); });
+  vid.addEventListener('pause', function () { showPlay(true); });
   vid.addEventListener('seeked', function () { paint(vid.currentTime); });
   document.addEventListener('visibilitychange', sync);
   if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; sync(); }, { threshold: 0.15 }).observe(root);
@@ -141,12 +154,14 @@
   for (var i = 0; i < dots.length; i++) (function (i) {
     dots[i].addEventListener('click', function () {
       vid.currentTime = CH[i][1] + 0.05; paint(vid.currentTime);
-      userPaused = false; if (!reduce) sync();
+      userPaused = false; sync();
     });
   })(i);
-  vid.addEventListener('click', function () { userPaused = !userPaused; sync(); });
+  vid.addEventListener('click', toggle);
+  playBtn.addEventListener('click', toggle);
 
   paint(0);
+  if (userPaused) showPlay(true);
   sync();
 
   window.AtomDemo = {

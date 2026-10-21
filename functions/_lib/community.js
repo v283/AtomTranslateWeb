@@ -22,7 +22,7 @@ export const WEB_APP_ORIGIN = "https://app.atomtranslate.com";
 // for the page's <style> block — that grants no script execution. img-src allows Supabase for
 // the signed word thumbnails loaded by the accordion.
 export const PAGE_SECURITY_HEADERS = {
-  "Content-Security-Policy": `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL}; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+  "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
