@@ -60,7 +60,7 @@ ${canonical ? `<link rel="canonical" href="${escapeHtml(canonical)}">\n` : ""}<m
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(ogUrl)}">
-<meta property="og:image" content="https://atomtranslate.com/og-image.png">
+<meta property="og:image" content="https://atomtranslate.com/og-image.png?v=2">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
