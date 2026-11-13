@@ -703,6 +703,24 @@ ul {
   color: var(--text-faint);
   font-size: 0.82rem;
   font-family: var(--font-mono);
+  align-items: center;
+}
+
+.footer-badge {
+  display: inline-flex;
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+
+.footer-badge:hover,
+.footer-badge:focus-visible {
+  opacity: 0.9;
+}
+
+.footer-badge img {
+  display: block;
+  width: 96px;
+  height: auto;
 }
 
 /* ---------- Page hero (secondary pages) ---------- */
