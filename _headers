@@ -7,10 +7,12 @@
 # тому script-src 'self' без 'unsafe-inline'. <script type="application/ld+json"> — це дані,
 # CSP їх не блокує. style-src/font-src відкриті для Google Fonts; static.cloudflareinsights.com
 # і cloudflareinsights.com — beacon Cloudflare Web Analytics (Cloudflare вставляє його сам).
+# img-src https://i.ytimg.com — обкладинки YouTube Shorts у блоці «Короткі відео» на /uk/
+# (functions/_middleware.js ставить такий самий CSP на цю сторінку — тримати синхронно).
 # На відповіді Pages Functions (community-сторінка) цей файл НЕ діє — там свій набір,
 # PAGE_SECURITY_HEADERS у functions/_lib/community.js; тримати обидва синхронно.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
