@@ -1258,10 +1258,12 @@ ul {
   }
 }
 
-/* "Web app" nav link. Hidden where it would push the logo onto two lines; the hero and
-   download sections carry the full "Open web app" button at every width. */
+/* Third nav link — "Web app" on the EN page, "Короткі відео" on /uk/. Hidden where it would
+   push the logo onto two lines; the hero and download sections carry the full "Open web app"
+   button at every width, and the videos block sits on the page itself. */
 @media (max-width: 1040px) {
-  .site-nav .nav-webapp {
+  .site-nav .nav-webapp,
+  .site-nav .nav-videos {
     display: none;
   }
 }
