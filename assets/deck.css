@@ -448,13 +448,9 @@ a { color: var(--accent-text); }
 
 /* ------------------------------------------------------------------ words */
 
-.all-words summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; min-height: 44px; }
-.all-words summary::-webkit-details-marker { display: none; }
-.all-words summary h2 { flex: 1; margin: 0; }
-.all-words[open] summary .chev { transform: rotate(90deg); }
 .all-words__count { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 6px; }
-.all-words__section { font-size: 16px; margin: 18px 0 4px; }
 .words-panel h2 { display: flex; align-items: baseline; }
+.words-panel__hint { margin: 10px 0 0; font-size: 14px; color: var(--text-muted); }
 
 /* ------------------------------------------------------------------ section navigation */
 

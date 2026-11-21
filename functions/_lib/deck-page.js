@@ -28,6 +28,8 @@ export { MIN_INDEXABLE_WORDS } from "./indexing.js";
 
 const MAX_JSON_LD_TERMS = 200;
 const QUIZ_POOL_SIZE = 60;
+// Words shown (and marked up) on the deck page of a multi-section deck; section pages list them all.
+const DECK_SAMPLE_SHOWN = 20;
 
 // Runs before first paint so the page never flashes the wrong theme. Inline on purpose (an
 // external file would load too late); the CSP allows exactly this text by its hash.
@@ -187,7 +189,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=8">
+<link rel="stylesheet" href="/assets/deck.css?v=10">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -209,7 +211,7 @@ export function deckPath(shortId, slug) {
 /** Things title, H1, description and JSON-LD share. */
 export function deckFacts(folder, sections, lang) {
   const s = strings(lang);
-  const publicWordCount = sections.reduce((sum, sec) => sum + sec.words.length, 0);
+  const publicWordCount = sections.reduce((sum, sec) => sum + sec.wordCount, 0);
   const wordCount = publicWordCount || Number(folder.word_count) || 0;
   const language = folder.language || "";
   const phrase = wordsPhrase(lang, wordCount, lang === "uk" ? language : languageName(lang, language));
@@ -255,16 +257,34 @@ function intentUrl(shortId) {
   return `intent://${target}#Intent;scheme=https;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(PLAY_STORE_URL)};end`;
 }
 
+/**
+ * The words the deck page shows: every word when one section holds them all (its section page
+ * points here as canonical), otherwise a short sample — the full lists live on section pages.
+ */
+function deckShownWords(sections) {
+  const withWords = sections.filter((sec) => sec.wordCount > 0);
+  const all = sections.flatMap((sec) => sec.words);
+  return withWords.length === 1 ? { words: all, complete: true } : { words: all.slice(0, DECK_SAMPLE_SHOWN), complete: false };
+}
+
+/** Structured data may describe only what the page shows: the full description, not the meta cut. */
+function fullDescription(text, fallback) {
+  const t = String(text || "").trim();
+  return t || fallback;
+}
+
 function deckJsonLd({ folder, sections, facts, description, canonical, lang, authorName }) {
   const s = strings(lang);
   const inLanguage = [folder.language, folder.native_language].filter(Boolean).map((l) => LANGUAGE_CODES[l] || l);
-  const terms = [];
-  for (const sec of sections) {
-    for (const w of sec.words) {
-      if (terms.length >= MAX_JSON_LD_TERMS) break;
-      terms.push({ "@type": "DefinedTerm", name: w.original, description: w.translation });
-    }
-  }
+  // Only the words visible on this page are marked up; each section page carries its own
+  // DefinedTermSet with its full list, and the deck's set points at those parts.
+  const terms = deckShownWords(sections).words.slice(0, MAX_JSON_LD_TERMS)
+    .map((w) => ({ "@type": "DefinedTerm", name: w.original, description: w.translation }));
+  const parts = sections.filter((sec) => sec.wordCount > 0).map((sec) => ({
+    "@type": "DefinedTermSet",
+    name: sec.name,
+    url: `${canonical}/${sectionSlug(sec)}`,
+  }));
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -280,13 +300,14 @@ function deckJsonLd({ folder, sections, facts, description, canonical, lang, aut
         "@type": "DefinedTermSet",
         "@id": `${canonical}#words`,
         name: `${folder.name} — ${facts.subtitle}`,
-        description,
+        description: fullDescription(folder.description, description),
         url: canonical,
         ...(inLanguage.length ? { inLanguage: inLanguage.length === 1 ? inLanguage[0] : inLanguage } : {}),
         ...(folder.updated_at ? { dateModified: folder.updated_at } : {}),
         ...(authorName ? { creator: { "@type": "Person", name: authorName } } : {}),
         ...(folder.level ? { educationalLevel: folder.level } : {}),
         ...(terms.length ? { hasDefinedTerm: terms } : {}),
+        ...(parts.length > 1 ? { hasPart: parts } : {}),
         publisher: { "@type": "Organization", name: "Atom Translate", url: `${SITE_ORIGIN}/` },
       },
     ],
@@ -436,8 +457,8 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
   const appLink = mobileDeckUrl(shortId);
   const isMain = variant === "main";
   const indexable = isIndexableDeck({ name: folder.name, wordCount: facts.wordCount, sectionNames: sections.map((sec) => sec.name) });
-  const sectionsWithWords = sections.filter((sec) => sec.words.length > 0);
-  const firstRanked = sections.find((sec) => sec.words.length >= 4);
+  const sectionsWithWords = sections.filter((sec) => sec.wordCount > 0);
+  const firstRanked = sections.find((sec) => sec.wordCount >= 4);
   const hasQuiz = hasQuizWords(sections);
 
   const learnersHtml = Number.isFinite(learners) && learners >= 2
@@ -449,15 +470,19 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
         <span class="sec-card__icon"><img src="/assets/icons/books.png" width="36" height="36" alt=""></span>
         <span class="sec-card__body">
           <span class="sec-card__name">${breakableHtml(sec.name)}</span>
-          <span class="sec-card__count">${escapeHtml(countLabel(lang, sec.words.length, s.words))}</span>
+          <span class="sec-card__count">${escapeHtml(countLabel(lang, sec.wordCount, s.words))}</span>
           ${sec.description ? `<span class="sec-card__desc">${escapeHtml(truncate(sec.description, 120))}</span>` : ""}
         </span>
         ${ICONS.chevron}
       </a></li>`).join("");
 
-  const allWords = sectionsWithWords.map((sec) => `
-      <h3 class="all-words__section">${escapeHtml(sec.name)}</h3>
-      ${wordsTableHtml(sec.words, folder, s)}`).join("");
+
+  const shown = deckShownWords(sections);
+  const shownWordsHtml = shown.words.length ? `<section class="panel words-panel" aria-labelledby="words-title">
+    <h2 id="words-title">${escapeHtml(shown.complete ? s.wordsTitle : s.sampleWordsTitle)}${shown.complete ? ` <span class="all-words__count">${escapeHtml(String(shown.words.length))}</span>` : ""}</h2>
+    ${wordsTableHtml(shown.words, folder, s)}
+    ${shown.complete ? "" : `<p class="words-panel__hint">${escapeHtml(s.sampleWordsHint)}</p>`}
+  </section>` : "";
 
   const bodyHtml = `
 ${androidBannerHtml(s, intentUrl(shortId))}
@@ -489,6 +514,8 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
     </ul>
   </section>` : ""}
 
+  ${shownWordsHtml}
+
   ${facts.wordCount > 0 ? modesHtml(s, lang, "folder", folder.id, s.modesDeck) : ""}
 
   <section class="panel board" id="board" hidden aria-labelledby="board-title">
@@ -496,10 +523,6 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
     <div data-board-body aria-live="polite"></div>
   </section>
 
-  ${sectionsWithWords.length ? `<details class="panel all-words">
-    <summary><h2>${escapeHtml(s.allWords)} <span class="all-words__count">${escapeHtml(String(facts.wordCount))}</span></h2>${ICONS.chevron}</summary>
-    ${allWords}
-  </details>` : ""}
 </main>
 ${footerHtml(s, lang)}
 ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--primary" href="#quiz" data-start-quiz>${escapeHtml(s.demoTest)}</a></div>` : ""}`;
@@ -533,11 +556,11 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
   const s = strings(lang);
   const shortId = folder.short_id;
   const appLink = mobileDeckUrl(shortId);
-  const visible = sections.filter((sec) => sec.words.length > 0);
+  const visible = sections.filter((sec) => sec.wordCount > 0);
   const index = visible.findIndex((sec) => sec.id === section.id);
   const prev = index > 0 ? visible[index - 1] : null;
   const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
-  const count = section.words.length;
+  const count = section.wordCount;
   // The only section with words shows exactly the deck page's words: point search engines at the
   // deck page instead of keeping two URLs with the same content (the sitemap leaves it out too).
   const onlySection = visible.length === 1 && visible[0].id === section.id;
@@ -617,11 +640,14 @@ ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--p
         "@type": "DefinedTermSet",
         "@id": `${canonical}#words`,
         name: `${section.name} — ${folder.name}`,
-        description,
+        description: fullDescription(section.description, description),
         url: canonical,
         isPartOf: { "@id": `${deckUrl}#words` },
         ...(inLanguage.length ? { inLanguage: inLanguage.length === 1 ? inLanguage[0] : inLanguage } : {}),
+        ...(section.updatedAt || folder.updated_at ? { dateModified: section.updatedAt || folder.updated_at } : {}),
         ...(author?.name ? { creator: { "@type": "Person", name: author.name } } : {}),
+        ...(folder.level ? { educationalLevel: folder.level } : {}),
+        publisher: { "@type": "Organization", name: "Atom Translate", url: `${SITE_ORIGIN}/` },
         hasDefinedTerm: section.words.slice(0, MAX_JSON_LD_TERMS)
           .map((w) => ({ "@type": "DefinedTerm", name: w.original, description: w.translation })),
       },
