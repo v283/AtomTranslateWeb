@@ -1,4 +1,4 @@
-// Client extras for the deck pages and the /decks catalog (functions/_lib/deck-page.js). The
+// Client extras for the deck and section pages and the /decks catalog (functions/_lib/deck-page.js). The
 // server-rendered HTML is complete without this file — every word is already in it. This adds:
 //   * the light/dark switch (the initial theme is set by the inline script in <head>),
 //   * the mini-quiz (3–5 questions from the deck, on the page),
@@ -203,6 +203,19 @@
 
     section.hidden = false;
     intro();
+
+    // "Try a demo test" (hero and sticky bar): start straight away and bring the quiz into view.
+    // Hidden in the HTML, since without this script there is no quiz to go to.
+    Array.prototype.forEach.call(document.querySelectorAll("[data-start-quiz]"), function (link) {
+      link.hidden = false;
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        start();
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        var first = section.querySelector(".quiz__option");
+        if (first) first.focus({ preventScroll: true });
+      });
+    });
   }
 
   /* ---------------------------------------------------------------- leaderboard teaser */
@@ -217,7 +230,7 @@
   function initBoard() {
     var section = document.getElementById("board");
     var body = section && section.querySelector("[data-board-body]");
-    if (!body || !window.fetch) return;
+    if (!body || !window.fetch || !data.board) return;
 
     fetch("/api/decks/" + encodeURIComponent(data.code) + "/leaderboard", { headers: { Accept: "application/json" } })
       .then(function (res) { return res.ok ? res.json() : null; })

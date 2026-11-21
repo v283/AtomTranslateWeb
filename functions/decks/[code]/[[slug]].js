@@ -1,4 +1,5 @@
-// GET /decks/{CODE} and /decks/{CODE}/{slug} — the indexable deck page on atomtranslate.com.
+// GET /decks/{CODE} and /decks/{CODE}/{slug} — the indexable deck page on atomtranslate.com —
+// and /decks/{CODE}/{slug}/{section-slug}-{id6}, one page per public section.
 //
 // The deck is found by its CODE (folders.short_id) alone; the slug only makes the URL readable.
 // Anything but the canonical form — no slug, an old slug after a rename, a lowercase code, a
@@ -11,8 +12,9 @@
 import { SITE_ORIGIN, fetchDeckByShortId } from "../../_lib/community.js";
 import {
   SHORT_ID_RE, isMobileHost, cacheKeyFor, fromCache, toCache, messageResponse,
-  canonicalDeckPath, renderDeck, headFrom,
+  canonicalDeckPath, renderDeck, renderSection, headFrom,
 } from "../../_lib/deck-route.js";
+import { sectionIdPart } from "../../_lib/slug.js";
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
@@ -31,6 +33,18 @@ export async function onRequestGet(context) {
     return messageResponse("unavailable", url);
   }
   if (!folder) return messageResponse("notFound", url);
+
+  const parts = Array.isArray(context.params.slug) ? context.params.slug : [];
+  if (parts.length >= 2) {
+    const idPart = sectionIdPart(parts[1]);
+    if (parts.length > 2 || !idPart) return messageResponse("notFound", url);
+    // Section pages live on the main host only; the main host sorts out a stale slug itself.
+    if (isMobileHost(url)) return Response.redirect(`${SITE_ORIGIN}${url.pathname}`, 301);
+    const result = await renderSection({ url, folder, idPart, requestedPath: url.pathname });
+    if (result.redirect) return Response.redirect(`${url.origin}${result.redirect}${preservedQuery(url)}`, 301);
+    toCache(context, key, result.response);
+    return result.response;
+  }
 
   const canonicalPath = canonicalDeckPath(folder);
   if (isMobileHost(url)) return Response.redirect(`${SITE_ORIGIN}${canonicalPath}`, 301);

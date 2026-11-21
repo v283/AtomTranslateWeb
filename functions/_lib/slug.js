@@ -80,3 +80,19 @@ export function deckSlug(folder, lang) {
   const unique = parts.filter((part, i) => i === 0 || !part || !name.includes(transliterate(part).trim()));
   return slugify(...unique);
 }
+
+// Section pages: /decks/{CODE}/{deck-slug}/{section-slug}-{first 6 hex of the section id}. The id
+// part keeps the URL stable and unique (two sections may share a name) and is what the page is
+// looked up by; the readable part follows renames via a 301.
+export const SECTION_ID_PART = 6;
+
+export function sectionSlug(section) {
+  const id = String(section.id || "").replace(/-/g, "").slice(0, SECTION_ID_PART).toLowerCase();
+  return `${slugify(section.name).slice(0, 60).replace(/-+$/, "")}-${id}`;
+}
+
+/** The id prefix at the end of a section slug, or null. */
+export function sectionIdPart(slug) {
+  const match = /-([0-9a-f]{6})$/.exec(String(slug || "").toLowerCase());
+  return match ? match[1] : null;
+}

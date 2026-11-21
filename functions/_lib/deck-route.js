@@ -3,8 +3,8 @@
 
 import { SITE_ORIGIN, fetchDeckByShortId, fetchDeckContent, fetchDeckAuthor, fetchDeckLearners } from "./community.js";
 import { deckLang } from "./deck-i18n.js";
-import { deckSlug } from "./slug.js";
-import { renderDeckPage, renderMessagePage, pageHeaders, deckPath } from "./deck-page.js";
+import { deckSlug, sectionSlug } from "./slug.js";
+import { renderDeckPage, renderSectionPage, renderMessagePage, pageHeaders, deckPath } from "./deck-page.js";
 
 // Short ids come from generate_short_id() (8 chars, A-Z/2-9) or the app's identical generator;
 // anything far outside that shape can't match, so it 404s without an upstream call.
@@ -115,6 +115,44 @@ export async function renderDeck({ code, url, variant, folder: preloaded }) {
     status: 200,
     headers: await pageHeaders({ "Cache-Control": DECK_CACHE_CONTROL }),
   });
+}
+
+/**
+ * A section page. `idPart` is the hex id prefix from the URL; the caller has the deck row already.
+ * Resolves to { response } for a 200/404/503, or { redirect } with the canonical path when the
+ * URL's readable parts are stale.
+ */
+export async function renderSection({ url, folder, idPart, requestedPath }) {
+  const lang = deckLang(folder);
+  let content;
+  try {
+    content = await fetchDeckContent(folder.id);
+  } catch {
+    return { response: await messageResponse("unavailable", url, lang) };
+  }
+  const section = content.sections.find((sec) => sec.id.replace(/-/g, "").toLowerCase().startsWith(idPart));
+  if (!section) return { response: await messageResponse("notFound", url, lang) };
+
+  const deckCanonicalPath = canonicalDeckPath(folder);
+  const path = `${deckCanonicalPath}/${sectionSlug(section)}`;
+  if (requestedPath !== path) return { redirect: path };
+
+  const author = await fetchDeckAuthor(folder);
+  const html = renderSectionPage({
+    folder,
+    sections: content.sections,
+    section,
+    author,
+    lang,
+    deckUrl: `${SITE_ORIGIN}${deckCanonicalPath}`,
+    canonical: `${SITE_ORIGIN}${path}`,
+  });
+  return {
+    response: new Response(html, {
+      status: 200,
+      headers: await pageHeaders({ "Cache-Control": DECK_CACHE_CONTROL }),
+    }),
+  };
 }
 
 /** HEAD answered from the GET handler, without the body. */

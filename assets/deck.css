@@ -18,6 +18,7 @@
   --accent: #378add;        /* Accent */
   --accent-text: #5ba3e8;   /* InfoText */
   --accent-soft: #1b3349;   /* AccentLight */
+  --info-strong: #185fa5;   /* InfoStrong */
   --accent-alt: #e8944a;    /* AccentAlt */
   --accent-alt-soft: #3a2a19; /* AccentAltLight */
   --on-accent: #ffffff;
@@ -48,6 +49,7 @@
   --accent: #378add;
   --accent-text: #185fa5;   /* InfoText */
   --accent-soft: #ebf4fd;
+  --info-strong: #185fa5;
   --accent-alt: #c9660f;
   --accent-alt-soft: #fbf0e4;
   --on-accent: #ffffff;
@@ -120,6 +122,10 @@ a { color: var(--accent-text); }
 .page--wide { max-width: 1040px; }
 
 .crumbs { font-size: 14px; margin: 4px 0 12px; }
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; list-style: none; }
+.crumbs li { display: inline-flex; align-items: center; min-width: 0; }
+.crumbs li + li::before { content: "›"; margin: 0 8px; color: var(--text-muted); }
+.crumbs li[aria-current] { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
 .crumbs a { display: inline-flex; align-items: center; min-height: 44px; }
 
 .foot { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; border-top: 1px solid var(--border); }
@@ -133,7 +139,13 @@ a { color: var(--accent-text); }
   padding: 24px 20px; box-shadow: var(--shadow);
 }
 
-.hero h1 { margin: 0 0 8px; line-height: 1.2; }
+.hero h1 { margin: 0; line-height: 1.2; min-width: 0; }
+.hero__head { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+/* The app's folder/section badge: pictogram on an AccentLight tile. */
+.hero__icon {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 72px; height: 72px; border-radius: 18px; background: var(--accent-soft);
+}
 .hero__name { display: block; font-size: 28px; overflow-wrap: anywhere; }
 .hero__sub { display: block; margin-top: 4px; font-size: 17px; font-weight: 600; color: var(--text-muted); }
 .hero--message h1 { font-size: 24px; }
@@ -359,3 +371,78 @@ a { color: var(--accent-text); }
 @media (prefers-reduced-motion: reduce) {
   .chev, .sticky-cta { transition: none; }
 }
+
+/* ------------------------------------------------------------------ stats */
+
+.stats { margin: 12px 0 0; }
+.stat--learners { font-size: 14px; font-weight: 600; color: var(--success-text); }
+
+/* ------------------------------------------------------------------ section cards */
+
+.sec-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.sec-card {
+  display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 12px 14px;
+  border-radius: 18px; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); text-decoration: none;
+}
+.sec-card:hover { border-color: var(--accent); }
+.sec-card__icon {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 56px; height: 56px; border-radius: 14px; background: var(--accent-soft);
+}
+.sec-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sec-card__name { font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
+.sec-card__count { font-size: 14px; color: var(--text-muted); }
+.sec-card__desc { font-size: 14px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ------------------------------------------------------------------ practice modes */
+
+.modes__note { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text-muted); }
+.modes__note .mode__lock { position: static; margin-top: 2px; }
+.modes__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.mode {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-height: 96px; padding: 12px; border-radius: 16px; text-decoration: none; font-weight: 700; font-size: 16px;
+}
+.mode img { width: 32px; height: 32px; }
+.mode:hover { filter: brightness(0.97); }
+.mode__lock { position: absolute; top: 10px; right: 10px; width: 16px; height: 16px; opacity: 0.75; }
+/* Tints of the app's section screen (SectionHeaderContent). */
+.mode--accent { background: var(--accent-soft); color: var(--accent-text); }
+.mode--info { background: var(--info-strong); color: #ffffff; }
+.mode--success { background: var(--success-soft); color: var(--success-text); }
+.mode--muted { background: var(--surface-alt); color: var(--text-muted); }
+.mode--danger { background: var(--danger-soft); color: var(--danger-text); }
+.mode--warning { background: var(--warning-soft); color: var(--warning-text); }
+
+/* ------------------------------------------------------------------ words */
+
+.all-words summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; min-height: 44px; }
+.all-words summary::-webkit-details-marker { display: none; }
+.all-words summary h2 { flex: 1; margin: 0; }
+.all-words[open] summary .chev { transform: rotate(90deg); }
+.all-words__count { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 6px; }
+.all-words__section { font-size: 16px; margin: 18px 0 4px; }
+.words-panel h2 { display: flex; align-items: baseline; }
+
+/* ------------------------------------------------------------------ section navigation */
+
+.sec-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.sec-nav__link {
+  display: flex; flex-direction: column; gap: 2px; min-height: 64px; padding: 12px 14px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text); text-decoration: none; min-width: 0;
+}
+.sec-nav__link:hover { border-color: var(--accent); }
+.sec-nav__link small { font-size: 12px; color: var(--text-muted); }
+.sec-nav__link span { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sec-nav__link--next { text-align: right; grid-column: 2; }
+.back-to-deck { margin: 16px 0 0; }
+.back-to-deck a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+
+@media (min-width: 640px) {
+  .modes__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sec-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The app's pictograms are not all square; fit them inside their box instead of stretching. */
+.mode img, .hero__icon img, .sec-card__icon img { object-fit: contain; }

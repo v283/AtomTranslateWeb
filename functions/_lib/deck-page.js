@@ -13,6 +13,7 @@
 import {
   PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, SUPABASE_URL, escapeHtml,
 } from "./community.js";
+import { sectionSlug } from "./slug.js";
 import {
   strings, fmt, plural, countLabel, wordsPhrase, languageName, categoryName, gradeLabel, modeName,
   LANGUAGE_CODES,
@@ -107,7 +108,7 @@ function footerHtml(s, lang) {
   return `
 <footer class="foot">
   <nav aria-label="Atom Translate">
-    <a href="${SITE_ORIGIN}/decks">${escapeHtml(s.allDecks)}</a>
+    <a href="/decks">${escapeHtml(s.allDecks)}</a>
     <a href="${SITE_ORIGIN}${home}">Atom Translate</a>
     <a href="${SITE_ORIGIN}/support.html">${escapeHtml(s.support)}</a>
     <a href="${SITE_ORIGIN}/privacy-policy.html">${escapeHtml(s.privacy)}</a>
@@ -170,11 +171,11 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=4">
+<link rel="stylesheet" href="/assets/deck.css?v=5">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
-${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=2" defer></script>` : `<script src="/assets/deck.js?v=2" defer></script>`}
+${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=3" defer></script>` : `<script src="/assets/deck.js?v=3" defer></script>`}
 </body>
 </html>`;
 }
@@ -291,11 +292,122 @@ function quizPool(sections) {
   return Array.from({ length: QUIZ_POOL_SIZE }, (_, i) => all[Math.floor(i * step)]).map((w) => [w.original, w.translation]);
 }
 
+// The six practice modes, as the app's section screen shows them (SectionHeaderContent): same
+// order, pictograms and tints. The `mode` is the web app's /study/:mode segment.
+const MODES = [
+  { mode: "flashcards", icon: "joker", tone: "accent" },
+  { mode: "quiz", icon: "fountain_pen", tone: "info" },
+  { mode: "writing", icon: "memo", tone: "success" },
+  { mode: "matching", icon: "link", tone: "muted" },
+  { mode: "truefalse", icon: "approved", tone: "danger" },
+  { mode: "listening", icon: "headphone", tone: "warning" },
+];
+
+const LOCK_ICON = `<svg class="mode__lock" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></svg>`;
+
 /**
+ * The real exercises, in the web app. They need an account: /study/* there sits behind sign-in,
+ * so a visitor without one goes through the login screen and lands on the exercise after it.
+ */
+function modesHtml(s, lang, scope, id, heading) {
+  const tiles = MODES.map((m) => {
+    const name = modeName(lang, m.mode);
+    const href = `${WEB_APP_ORIGIN}/study/${m.mode}/${scope}/${encodeURIComponent(id)}`;
+    return `<li><a class="mode mode--${m.tone}" href="${escapeHtml(href)}" aria-label="${escapeHtml(fmt(s.modeLockedLabel, name))}">
+          <img src="/assets/icons/${m.icon}.png" width="32" height="32" alt="" loading="lazy">
+          <span>${escapeHtml(name)}</span>${LOCK_ICON}
+        </a></li>`;
+  }).join("");
+  return `
+  <section class="panel modes" aria-labelledby="modes-title">
+    <h2 id="modes-title">${escapeHtml(heading)}</h2>
+    <p class="modes__note">${LOCK_ICON}<span>${escapeHtml(s.modesLocked)}</span></p>
+    <ul class="modes__grid">${tiles}</ul>
+  </section>`;
+}
+
+function wordsTableHtml(words, folder, s) {
+  const code = LANGUAGE_CODES[folder.language] || "";
+  return `<table class="words">
+          <thead class="sr-only"><tr><th scope="col">${escapeHtml(s.original)}</th><th scope="col">${escapeHtml(s.translation)}</th></tr></thead>
+          <tbody>${words.map((w) => `<tr><td${code ? ` lang="${escapeHtml(code)}"` : ""}>${escapeHtml(w.original)}</td><td>${escapeHtml(w.translation)}</td></tr>`).join("")}</tbody>
+        </table>`;
+}
+
+function quizPanelHtml(s) {
+  return `
+  <section class="panel quiz" id="quiz" hidden aria-labelledby="quiz-title">
+    <h2 id="quiz-title">${escapeHtml(s.quizTitle)}</h2>
+    <div data-quiz-body></div>
+  </section>`;
+}
+
+function chipsHtml(folder, s, lang) {
+  const languagePair = [languageName(lang, folder.language), languageName(lang, folder.native_language)]
+    .filter(Boolean).join(" → ");
+  const chips = [
+    ...[
+      folder.textbook ? `${s.textbook}: ${folder.textbook.trim()}` : "",
+      gradeLabel(lang, folder.grade),
+      folder.unit ? folder.unit.trim() : "",
+    ].filter(Boolean).map((text) => ({ text, kind: "book" })),
+    { text: languagePair, kind: "language" },
+    { text: categoryName(lang, folder.category), kind: "category" },
+    { text: folder.level ? `${s.level} ${folder.level}` : "", kind: "level" },
+  ].filter((c) => c.text);
+  return chips.length
+    ? `<ul class="chips">${chips.map((c) => `<li class="chip chip--${c.kind}">${escapeHtml(c.text)}</li>`).join("")}</ul>`
+    : "";
+}
+
+/** Data for /assets/deck.js: quiz pool, links and the strings it needs. */
+function pageDataFor({ lang, s, shortId, variant, quizSections, fullTestUrl, firstRanked, appLink, isMain, withBoard }) {
+  return {
+    lang,
+    code: shortId,
+    variant,
+    board: withBoard,
+    quiz: quizPool(quizSections),
+    webFolderQuiz: fullTestUrl,
+    firstRankedQuiz: firstRanked ? `${WEB_APP_ORIGIN}/study/quiz/section/${encodeURIComponent(firstRanked.id)}` : null,
+    sectionQuizBase: `${WEB_APP_ORIGIN}/study/quiz/section/`,
+    appLink,
+    isMain,
+    s: {
+      quizIntro: s.quizIntro,
+      questions: s.questions, quizQuestion: s.quizQuestion, quizCorrect: s.quizCorrect, quizWrong: s.quizWrong,
+      quizNext: s.quizNext, quizStart: s.quizStart, quizResult: s.quizResult, quizResultHint: s.quizResultHint,
+      quizContinueWeb: s.signInFullTest, quizAgain: s.quizAgain, openInApp: s.openInApp,
+      boardIn: s.boardIn, boardEmpty: s.boardEmpty, boardBeFirst: s.boardBeFirst, boardTry: s.boardTry, boardPlayers: s.boardPlayers,
+      seconds: s.seconds, minutes: s.minutes,
+      modes: Object.fromEntries(["writing", "quiz", "matching", "true_false", "listening"].map((m) => [m, modeName(lang, m)])),
+    },
+  };
+}
+
+function heroCtaHtml(s, { isMain, appLink, hasQuiz }) {
+  return `<div class="cta" data-hero-cta>
+      ${hasQuiz ? `<a class="btn btn--primary" href="#quiz" data-start-quiz hidden>${escapeHtml(s.demoTest)}</a>` : ""}
+      ${isMain ? `<a class="btn btn--secondary only-touch" href="${escapeHtml(appLink)}">${ICONS.phone}<span>${escapeHtml(s.openInApp)}</span></a>` : ""}
+    </div>`;
+}
+
+/** Path part of an absolute URL: links between our own pages stay on the current host. */
+function pathOf(url) {
+  return new URL(url).pathname;
+}
+
+function hasQuizWords(sections) {
+  const translations = new Set(sections.flatMap((sec) => sec.words.map((w) => w.translation)));
+  return translations.size >= 4;
+}
+
+/**
+ * The deck page.
  * @param {object} p
  * @param {"main"|"mobile"} p.variant
  * @param {object} p.folder     deck row (fetchDeckByShortId)
- * @param {Array}  p.sections   [{ id, name, words: [{original, translation}] }]
+ * @param {Array}  p.sections   [{ id, name, description, words: [{original, translation}] }]
  * @param {{id: string, name: string, avatarUrl: string|null}} p.author
  * @param {number|null} p.learners
  * @param {string} p.lang       "uk" | "en"
@@ -308,109 +420,77 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
   const facts = deckFacts(folder, sections, lang);
   const description = deckDescription(folder, facts, authorName, lang);
   const appLink = mobileDeckUrl(shortId);
-  const webFolderQuiz = `${WEB_APP_ORIGIN}/study/quiz/folder/${encodeURIComponent(folder.id)}`;
-  const sectionQuiz = (sec) => `${WEB_APP_ORIGIN}/study/quiz/section/${encodeURIComponent(sec.id)}`;
   const isMain = variant === "main";
   const indexable = facts.wordCount >= MIN_INDEXABLE_WORDS;
-
-  const languagePair = [languageName(lang, folder.language), languageName(lang, folder.native_language)]
-    .filter(Boolean).join(" → ");
-  const chips = [
-    { text: languagePair, kind: "language" },
-    { text: categoryName(lang, folder.category), kind: "category" },
-    { text: folder.level ? `${s.level} ${folder.level}` : "", kind: "level" },
-  ].filter((c) => c.text);
-  const bookChips = [
-    folder.textbook ? `${s.textbook}: ${folder.textbook.trim()}` : "",
-    gradeLabel(lang, folder.grade),
-    folder.unit ? folder.unit.trim() : "",
-  ].filter(Boolean);
-
   const sectionsWithWords = sections.filter((sec) => sec.words.length > 0);
   const firstRanked = sections.find((sec) => sec.words.length >= 4);
-
-  const sectionsHtml = sectionsWithWords.map((sec, i) => `
-    <details class="sec"${i === 0 ? " open" : ""}>
-      <summary>
-        <span class="sec__name">${escapeHtml(sec.name)}</span>
-        <span class="sec__count">${escapeHtml(countLabel(lang, sec.words.length, s.words))}</span>
-        ${ICONS.chevron}
-      </summary>
-      <div class="sec__body">
-        <a class="btn btn--train" href="${escapeHtml(sectionQuiz(sec))}" aria-label="${escapeHtml(fmt(s.trainSection, sec.name))}">${ICONS.play}<span>${escapeHtml(s.train)}</span></a>
-        <table class="words">
-          <thead class="sr-only"><tr><th scope="col">${escapeHtml(s.original)}</th><th scope="col">${escapeHtml(s.translation)}</th></tr></thead>
-          <tbody>${sec.words.map((w) => `<tr><td lang="${escapeHtml(LANGUAGE_CODES[folder.language] || "")}">${escapeHtml(w.original)}</td><td>${escapeHtml(w.translation)}</td></tr>`).join("")}</tbody>
-        </table>
-      </div>
-    </details>`).join("");
+  const hasQuiz = hasQuizWords(sections);
 
   const learnersHtml = Number.isFinite(learners) && learners >= 2
-    ? `<p class="learners">${escapeHtml(`${learners} ${plural(lang, learners, s.learners)}`)}</p>`
+    ? `<span class="stat stat--learners">${escapeHtml(`${learners} ${plural(lang, learners, s.learners)}`)}</span>`
     : "";
+
+  const sectionCards = sectionsWithWords.map((sec) => `
+      <li><a class="sec-card" href="${escapeHtml(`${pathOf(canonical)}/${sectionSlug(sec)}`)}">
+        <span class="sec-card__icon"><img src="/assets/icons/books.png" width="36" height="36" alt=""></span>
+        <span class="sec-card__body">
+          <span class="sec-card__name">${escapeHtml(sec.name)}</span>
+          <span class="sec-card__count">${escapeHtml(countLabel(lang, sec.words.length, s.words))}</span>
+          ${sec.description ? `<span class="sec-card__desc">${escapeHtml(truncate(sec.description, 120))}</span>` : ""}
+        </span>
+        ${ICONS.chevron}
+      </a></li>`).join("");
+
+  const allWords = sectionsWithWords.map((sec) => `
+      <h3 class="all-words__section">${escapeHtml(sec.name)}</h3>
+      ${wordsTableHtml(sec.words, folder, s)}`).join("");
 
   const bodyHtml = `
 ${androidBannerHtml(s, intentUrl(shortId))}
 ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
 <main class="page">
   <nav class="crumbs" aria-label="Breadcrumb">
-    <a href="${SITE_ORIGIN}/decks">${escapeHtml(s.decks)}</a>
+    <ol><li><a href="/decks">${escapeHtml(s.decks)}</a></li><li aria-current="page">${escapeHtml(folder.name)}</li></ol>
   </nav>
   <section class="hero" aria-labelledby="deck-title">
-    <h1 id="deck-title"><span class="hero__name">${escapeHtml(folder.name)}</span><span class="hero__sub">${escapeHtml(facts.subtitle)}</span></h1>
+    <div class="hero__head">
+      <span class="hero__icon"><img src="/assets/icons/open_file_folder.png" width="44" height="44" alt=""></span>
+      <h1 id="deck-title"><span class="hero__name">${escapeHtml(folder.name)}</span><span class="hero__sub">${escapeHtml(facts.subtitle)}</span></h1>
+    </div>
     <div class="hero__meta">
       ${author?.id ? authorHtml(author, s) : ""}
       <span class="hero__sections">${escapeHtml(countLabel(lang, sectionsWithWords.length || Number(folder.section_count) || 0, s.sections))}</span>
     </div>
-    ${chips.length || bookChips.length ? `<ul class="chips">${[...bookChips.map((c) => `<li class="chip chip--book">${escapeHtml(c)}</li>`), ...chips.map((c) => `<li class="chip chip--${c.kind}">${escapeHtml(c.text)}</li>`)].join("")}</ul>` : ""}
+    ${chipsHtml(folder, s, lang)}
     ${folder.description && folder.description.trim() ? `<p class="hero__desc">${escapeHtml(folder.description.trim())}</p>` : ""}
-    ${learnersHtml}
-    <div class="cta" data-hero-cta>
-      ${facts.wordCount > 0 ? `<a class="btn btn--primary" href="${escapeHtml(webFolderQuiz)}">${escapeHtml(s.takeTest)}</a>` : ""}
-      ${isMain ? `<a class="btn btn--secondary only-touch" href="${escapeHtml(appLink)}">${ICONS.phone}<span>${escapeHtml(s.openInApp)}</span></a>` : ""}
-    </div>
+    ${learnersHtml ? `<p class="stats">${learnersHtml}</p>` : ""}
+    ${heroCtaHtml(s, { isMain, appLink, hasQuiz })}
     ${storeBadgesHtml(s)}
     <p class="hint">${escapeHtml(s.alreadyHaveApp)}</p>
   </section>
 
-  <section class="panel quiz" id="quiz" hidden aria-labelledby="quiz-title">
-    <h2 id="quiz-title">${escapeHtml(s.quizTitle)}</h2>
-    <div data-quiz-body></div>
-  </section>
+  ${hasQuiz ? quizPanelHtml(s) : ""}
+
+  ${sectionsWithWords.length ? `<section class="sections" aria-labelledby="sections-title">
+    <h2 id="sections-title">${escapeHtml(s.sectionsHeading)}</h2>
+    <ul class="sec-list">${sectionCards}
+    </ul>
+  </section>` : ""}
+
+  ${facts.wordCount > 0 ? modesHtml(s, lang, "folder", folder.id, s.modesDeck) : ""}
 
   <section class="panel board" id="board" hidden aria-labelledby="board-title">
     <h2 id="board-title">${escapeHtml(s.boardTitle)}</h2>
     <div data-board-body aria-live="polite"></div>
   </section>
 
-  ${sectionsWithWords.length ? `<section class="sections" aria-labelledby="sections-title">
-    <h2 id="sections-title">${escapeHtml(s.sectionsTitle)}</h2>
-    ${sectionsHtml}
-  </section>` : ""}
+  ${sectionsWithWords.length ? `<details class="panel all-words">
+    <summary><h2>${escapeHtml(s.allWords)} <span class="all-words__count">${escapeHtml(String(facts.wordCount))}</span></h2>${ICONS.chevron}</summary>
+    ${allWords}
+  </details>` : ""}
 </main>
 ${footerHtml(s, lang)}
-${facts.wordCount > 0 ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--primary" href="${escapeHtml(webFolderQuiz)}">${escapeHtml(s.learnThese)}</a></div>` : ""}`;
-
-  const pageData = {
-    lang,
-    code: shortId,
-    variant,
-    quiz: quizPool(sections),
-    webFolderQuiz,
-    firstRankedQuiz: firstRanked ? sectionQuiz(firstRanked) : null,
-    sectionQuizBase: `${WEB_APP_ORIGIN}/study/quiz/section/`,
-    appLink,
-    isMain,
-    s: {
-      quizIntro: s.quizIntro,
-      questions: s.questions, quizQuestion: s.quizQuestion, quizCorrect: s.quizCorrect, quizWrong: s.quizWrong,
-      quizNext: s.quizNext, quizStart: s.quizStart, quizResult: s.quizResult, quizResultHint: s.quizResultHint,
-      quizContinueWeb: s.quizContinueWeb, quizAgain: s.quizAgain, openInApp: s.openInApp,
-      boardIn: s.boardIn, boardEmpty: s.boardEmpty, boardBeFirst: s.boardBeFirst, boardTry: s.boardTry, boardPlayers: s.boardPlayers,
-      seconds: s.seconds, minutes: s.minutes,
-      modes: Object.fromEntries(["writing", "quiz", "matching", "true_false", "listening"].map((m) => [m, modeName(lang, m)])),
-    },
-  };
+${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--primary" href="#quiz" data-start-quiz>${escapeHtml(s.demoTest)}</a></div>` : ""}`;
 
   return documentShell({
     lang,
@@ -424,10 +504,128 @@ ${facts.wordCount > 0 ? `<div class="sticky-cta" hidden data-sticky-cta><a class
     jsonLd: isMain ? deckJsonLd({ folder, sections, facts, description, canonical, lang, authorName }) : null,
     appLink,
     bodyHtml,
-    pageData,
+    pageData: pageDataFor({
+      lang, s, shortId, variant, quizSections: sections,
+      fullTestUrl: `${WEB_APP_ORIGIN}/study/quiz/folder/${encodeURIComponent(folder.id)}`,
+      firstRanked, appLink, isMain, withBoard: true,
+    }),
   });
 }
 
+/**
+ * One section's page: /decks/{CODE}/{deck-slug}/{section-slug}. Only on the main host (the app
+ * link is per deck). Same chrome as the deck page; its own title, description and words, the
+ * exercises for just this section, and navigation to the neighbouring sections.
+ */
+export function renderSectionPage({ folder, sections, section, author, lang, deckUrl, canonical }) {
+  const s = strings(lang);
+  const shortId = folder.short_id;
+  const appLink = mobileDeckUrl(shortId);
+  const visible = sections.filter((sec) => sec.words.length > 0);
+  const index = visible.findIndex((sec) => sec.id === section.id);
+  const prev = index > 0 ? visible[index - 1] : null;
+  const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
+  const count = section.words.length;
+  const phrase = wordsPhrase(lang, count, lang === "uk" ? folder.language : languageName(lang, folder.language));
+  const subtitle = `${phrase} ${s.withTranslation}`;
+  const qualifiers = [gradeLabel(lang, folder.grade), folder.level || ""].filter(Boolean);
+  const title = `${section.name} — ${folder.name}: ${subtitle}${qualifiers.length ? ` (${qualifiers.join(", ")})` : ""} | Atom Translate`;
+  const description = section.description && section.description.trim()
+    ? truncate(section.description, 160)
+    : truncate(fmt(s.sectionFallbackDescription, capitalize(phrase), section.name, folder.name), 200);
+  const hasQuiz = hasQuizWords([section]);
+
+  const navLink = (sec, label, rel) => sec
+    ? `<a class="sec-nav__link sec-nav__link--${rel}" rel="${rel}" href="${escapeHtml(`${pathOf(deckUrl)}/${sectionSlug(sec)}`)}"><small>${escapeHtml(label)}</small><span>${escapeHtml(sec.name)}</span></a>`
+    : `<span></span>`;
+
+  const bodyHtml = `
+${androidBannerHtml(s, intentUrl(shortId))}
+${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
+<main class="page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/decks">${escapeHtml(s.decks)}</a></li>
+      <li><a href="${escapeHtml(pathOf(deckUrl))}">${escapeHtml(folder.name)}</a></li>
+      <li aria-current="page">${escapeHtml(section.name)}</li>
+    </ol>
+  </nav>
+  <section class="hero" aria-labelledby="section-title">
+    <div class="hero__head">
+      <span class="hero__icon"><img src="/assets/icons/books.png" width="44" height="44" alt=""></span>
+      <h1 id="section-title"><span class="hero__name">${escapeHtml(section.name)}</span><span class="hero__sub">${escapeHtml(`${folder.name} · ${subtitle}`)}</span></h1>
+    </div>
+    <div class="hero__meta">${author?.id ? authorHtml(author, s) : ""}</div>
+    ${chipsHtml(folder, s, lang)}
+    ${section.description && section.description.trim() ? `<p class="hero__desc">${escapeHtml(section.description.trim())}</p>` : ""}
+    ${heroCtaHtml(s, { isMain: true, appLink, hasQuiz })}
+    ${storeBadgesHtml(s)}
+  </section>
+
+  ${hasQuiz ? quizPanelHtml(s) : ""}
+
+  ${count > 0 ? modesHtml(s, lang, "section", section.id, s.modesSection) : ""}
+
+  <section class="panel words-panel" aria-labelledby="words-title">
+    <h2 id="words-title">${escapeHtml(s.wordsTitle)} <span class="all-words__count">${escapeHtml(String(count))}</span></h2>
+    ${wordsTableHtml(section.words, folder, s)}
+  </section>
+
+  <nav class="sec-nav" aria-label="${escapeHtml(s.sectionsHeading)}">
+    ${navLink(prev, s.prevSection, "prev")}
+    ${navLink(next, s.nextSection, "next")}
+  </nav>
+  <p class="back-to-deck"><a href="${escapeHtml(pathOf(deckUrl))}">${escapeHtml(s.backToDeck)}</a></p>
+</main>
+${footerHtml(s, lang)}
+${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--primary" href="#quiz" data-start-quiz>${escapeHtml(s.demoTest)}</a></div>` : ""}`;
+
+  const inLanguage = [folder.language, folder.native_language].filter(Boolean).map((l) => LANGUAGE_CODES[l] || l);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Atom Translate", item: `${SITE_ORIGIN}/` },
+          { "@type": "ListItem", position: 2, name: s.decks, item: `${SITE_ORIGIN}/decks` },
+          { "@type": "ListItem", position: 3, name: folder.name, item: deckUrl },
+          { "@type": "ListItem", position: 4, name: section.name, item: canonical },
+        ],
+      },
+      {
+        "@type": "DefinedTermSet",
+        "@id": `${canonical}#words`,
+        name: `${section.name} — ${folder.name}`,
+        description,
+        url: canonical,
+        isPartOf: { "@id": `${deckUrl}#words` },
+        ...(inLanguage.length ? { inLanguage: inLanguage.length === 1 ? inLanguage[0] : inLanguage } : {}),
+        ...(author?.name ? { creator: { "@type": "Person", name: author.name } } : {}),
+        hasDefinedTerm: section.words.slice(0, MAX_JSON_LD_TERMS)
+          .map((w) => ({ "@type": "DefinedTerm", name: w.original, description: w.translation })),
+      },
+    ],
+  };
+
+  return documentShell({
+    lang,
+    title,
+    description,
+    robots: count >= MIN_INDEXABLE_WORDS ? "index,follow,max-image-preview:large" : "noindex,follow",
+    canonical,
+    ogUrl: canonical,
+    ogType: "article",
+    jsonLd,
+    appLink,
+    bodyHtml,
+    pageData: pageDataFor({
+      lang, s, shortId, variant: "main", quizSections: [section],
+      fullTestUrl: `${WEB_APP_ORIGIN}/study/quiz/section/${encodeURIComponent(section.id)}`,
+      firstRanked: null, appLink, isMain: true, withBoard: false,
+    }),
+  });
+}
 
 /* ------------------------------------------------------------------------ 404 / 503 */
 

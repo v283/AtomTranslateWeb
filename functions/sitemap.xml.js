@@ -7,9 +7,9 @@
 // 200 sitemap with just the static pages (or the decks fetched before a later page failed),
 // cached briefly so it recovers on its own.
 
-import { SITE_ORIGIN, fetchPublicFolderIndex } from "./_lib/community.js";
+import { SITE_ORIGIN, fetchPublicFolderIndex, fetchPublicSectionIndex } from "./_lib/community.js";
 import { deckLang } from "./_lib/deck-i18n.js";
-import { deckSlug } from "./_lib/slug.js";
+import { deckSlug, sectionSlug } from "./_lib/slug.js";
 import { deckPath, MIN_INDEXABLE_WORDS } from "./_lib/deck-page.js";
 
 const MAX_DECKS = 5000;
@@ -61,7 +61,7 @@ function toW3cDate(value) {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }
 
-function buildSitemap(decks) {
+function buildSitemap(decks, sections = []) {
   const entries = STATIC_PAGES.map((p) => urlEntry(SITE_ORIGIN + p.path, { alternates: p.alternates }));
   const seen = new Set();
   for (const deck of decks) {
@@ -74,6 +74,17 @@ function buildSitemap(decks) {
       lastmod: toW3cDate(deck.updated_at),
     }));
   }
+  // Section pages (/decks/{CODE}/{slug}/{section}), same 10-word bar as the deck pages.
+  for (const sec of sections) {
+    const code = String(sec.folder_short_id || "").trim();
+    if (!code || (Number(sec.word_count) || 0) < MIN_INDEXABLE_WORDS) continue;
+    const folder = {
+      name: sec.folder_name, native_language: sec.folder_native_language,
+      textbook: sec.folder_textbook, grade: sec.folder_grade, unit: sec.folder_unit,
+    };
+    const path = `${deckPath(code, deckSlug(folder, deckLang(folder)))}/${sectionSlug({ id: sec.section_id, name: sec.section_name })}`;
+    entries.push(urlEntry(`${SITE_ORIGIN}${path}`, { lastmod: toW3cDate(sec.section_updated_at) }));
+  }
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -84,16 +95,18 @@ ${entries.join("\n")}
 
 export async function onRequestGet() {
   let decks = [];
+  let sections = [];
   let degraded = false;
   try {
-    const index = await fetchPublicFolderIndex(MAX_DECKS);
+    const [index, sectionRows] = await Promise.all([fetchPublicFolderIndex(MAX_DECKS), fetchPublicSectionIndex()]);
     decks = index.rows;
+    sections = sectionRows;
     degraded = !index.complete;
   } catch {
     degraded = true;
   }
 
-  return new Response(buildSitemap(decks), {
+  return new Response(buildSitemap(decks, sections), {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=UTF-8",

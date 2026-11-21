@@ -281,15 +281,19 @@ export async function fetchDeckAuthor(folder) {
  * Throws on an upstream failure.
  */
 export async function fetchDeckContent(folderId) {
-  const sectionsRes = await restGet("sections", {
+  const sectionParams = (columns) => ({
     folder_id: `eq.${folderId}`,
     is_public: "eq.true",
     deleted_at: "is.null",
-    select: "id,name",
+    select: columns,
     order: "created_at.asc,id.asc",
   });
+  let sectionsRes = await restGet("sections", sectionParams("id,name,description,updated_at"));
+  if (await isSchemaMismatch(sectionsRes)) sectionsRes = await restGet("sections", sectionParams("id,name,updated_at"));
   if (!sectionsRes.ok) throw new Error(`sections lookup failed: ${sectionsRes.status}`);
-  const sections = (await sectionsRes.json()).map((s) => ({ id: s.id, name: s.name, words: [] }));
+  const sections = (await sectionsRes.json()).map((s) => ({
+    id: s.id, name: s.name, description: s.description ?? null, updatedAt: s.updated_at ?? null, words: [],
+  }));
   if (sections.length === 0) return { sections, truncated: false };
 
   const byId = new Map(sections.map((s) => [s.id, s]));
@@ -417,4 +421,19 @@ async function facetsFallback(minWords) {
     const [kind, value] = key.split("\u0000");
     return { kind, value, decks };
   }).sort((a, b) => a.kind.localeCompare(b.kind) || b.decks - a.decks || a.value.localeCompare(b.value));
+}
+
+/**
+ * Public sections of public decks with word counts (migration 0029's public_section_index), for
+ * the sitemap's section pages. [] before that migration — the section pages are still linked from
+ * their deck pages, crawlers just find them that way instead.
+ */
+export async function fetchPublicSectionIndex(max = 20000) {
+  try {
+    const res = await rpc("public_section_index", { p_limit: max });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
