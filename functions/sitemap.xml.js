@@ -74,6 +74,14 @@ function buildSitemap(decks, sections = []) {
     sectionNames.get(code).push(sec.section_name);
   }
   const indexableDecks = new Set();
+  // Sections with words per deck: a deck's only section has the deck page's words, and its page
+  // points its canonical at the deck page (renderSectionPage), so it is not listed separately.
+  const sectionsWithWords = new Map();
+  for (const sec of sections) {
+    if ((Number(sec.word_count) || 0) <= 0) continue;
+    const code = String(sec.folder_short_id || "").trim().toUpperCase();
+    sectionsWithWords.set(code, (sectionsWithWords.get(code) || 0) + 1);
+  }
   for (const deck of decks) {
     const shortId = String(deck.short_id || "").trim();
     const key = shortId.toUpperCase();
@@ -90,6 +98,7 @@ function buildSitemap(decks, sections = []) {
     const code = String(sec.folder_short_id || "").trim();
     if (!code) continue;
     const deckIndexable = indexableDecks.has(code.toUpperCase());
+    if ((sectionsWithWords.get(code.toUpperCase()) || 0) < 2) continue;
     if (!isIndexableSection({ deckIndexable, name: sec.section_name, wordCount: sec.word_count })) continue;
     const folder = { name: sec.folder_name, native_language: sec.folder_native_language };
     const path = `${deckPath(code, deckSlug(folder, deckLang(folder)))}/${sectionSlug({ id: sec.section_id, name: sec.section_name })}`;

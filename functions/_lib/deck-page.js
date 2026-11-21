@@ -538,6 +538,10 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
   const prev = index > 0 ? visible[index - 1] : null;
   const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
   const count = section.words.length;
+  // The only section with words shows exactly the deck page's words: point search engines at the
+  // deck page instead of keeping two URLs with the same content (the sitemap leaves it out too).
+  const onlySection = visible.length === 1 && visible[0].id === section.id;
+  const pageCanonical = onlySection ? deckUrl : canonical;
   const deckIndexable = isIndexableDeck({
     name: folder.name,
     wordCount: deckFacts(folder, sections, lang).wordCount,
@@ -629,8 +633,8 @@ ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--p
     title,
     description,
     robots: isIndexableSection({ deckIndexable, name: section.name, wordCount: count }) ? "index,follow,max-image-preview:large" : "noindex,follow",
-    canonical,
-    ogUrl: canonical,
+    canonical: pageCanonical,
+    ogUrl: pageCanonical,
     ogType: "article",
     jsonLd,
     appLink,
