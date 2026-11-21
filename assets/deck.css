@@ -214,13 +214,11 @@ a { color: var(--accent-text); }
   background: var(--surface-alt); color: var(--text); border: 1px solid var(--border);
 }
 /* Pills in the app's FolderDetailPage colours: language → success, category → accent,
-   level → warning; textbook/grade/unit → accent-alt (the native-language pill's colour). */
+   level → warning. */
 .chip--language { background: var(--success-soft); color: var(--success-text); border-color: transparent; }
 .chip--category { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
 .chip--level { background: var(--warning-soft); color: var(--warning-text); border-color: transparent; }
-.chip--book { background: var(--accent-alt-soft); color: var(--accent-alt); border-color: transparent; }
 /* AccentAlt alone is too light for small text on its tint in the light theme. */
-[data-theme="light"] .chip--book { color: color-mix(in srgb, var(--accent-alt) 70%, var(--text)); }
 
 .learners { margin: 12px 0 0; font-size: 14px; font-weight: 600; color: var(--success-text); }
 
@@ -376,7 +374,6 @@ a { color: var(--accent-text); }
 .deck-card a:hover { border-color: var(--accent); }
 .deck-card__name { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
 .deck-card__count { font-weight: 600; color: var(--text-muted); font-size: 14px; }
-.deck-card__book { font-weight: 700; color: var(--accent-text); font-size: 14px; }
 .deck-card__desc { font-size: 14px; color: var(--text-muted); }
 .deck-card__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 

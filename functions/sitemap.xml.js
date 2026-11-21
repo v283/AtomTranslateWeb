@@ -78,10 +78,7 @@ function buildSitemap(decks, sections = []) {
   for (const sec of sections) {
     const code = String(sec.folder_short_id || "").trim();
     if (!code || (Number(sec.word_count) || 0) < MIN_INDEXABLE_WORDS) continue;
-    const folder = {
-      name: sec.folder_name, native_language: sec.folder_native_language,
-      textbook: sec.folder_textbook, grade: sec.folder_grade, unit: sec.folder_unit,
-    };
+    const folder = { name: sec.folder_name, native_language: sec.folder_native_language };
     const path = `${deckPath(code, deckSlug(folder, deckLang(folder)))}/${sectionSlug({ id: sec.section_id, name: sec.section_name })}`;
     entries.push(urlEntry(`${SITE_ORIGIN}${path}`, { lastmod: toW3cDate(sec.section_updated_at) }));
   }

@@ -109,14 +109,6 @@ export function wordsPhrase(lang, count, language) {
   return language ? `${count} ${language} ${noun}` : `${count} ${noun}`;
 }
 
-/** "7 клас" / "grade 7"; free-form values are shown as entered. */
-export function gradeLabel(lang, grade) {
-  const value = String(grade ?? "").trim();
-  if (!value) return "";
-  if (/^\d{1,2}$/.test(value)) return lang === "uk" ? `${value} клас` : `Grade ${value}`;
-  return value;
-}
-
 // Leaderboard modes (the API's wire names), as the app calls them.
 const MODE_NAMES = {
   // As the app names them (Section_* resx keys).
@@ -159,9 +151,6 @@ const STRINGS = {
     getItOn: "Завантажити з",
     downloadOn: "Завантажити в",
     storesNote: "Застосунок для iPhone та Android",
-    textbook: "Підручник",
-    grade: "Клас",
-    unit: "Юніт",
     level: "Рівень",
     original: "Слово",
     translation: "Переклад",
@@ -201,17 +190,15 @@ const STRINGS = {
     fallbackBy: " (автор — {0})",
     // catalog
     catalogTitle: "Колоди слів з перекладом",
-    catalogDescription: "Публічні колоди слів у Atom Translate: за підручниками, класами, рівнями й темами. Відкрий будь-яку й пройди тест одразу в браузері.",
+    catalogDescription: "Публічні колоди слів у Atom Translate за рівнями й темами, зокрема до шкільних підручників. Відкрий будь-яку й пройди тест одразу в браузері.",
     catalogH1: "Колоди слів",
-    catalogIntro: "Колоди, якими поділились користувачі Atom Translate. Шукай за назвою, підручником, класом чи темою.",
+    catalogIntro: "Колоди, якими поділились користувачі Atom Translate. Шукай за назвою чи описом: підручник, клас, тема.",
     search: "Пошук",
     searchPlaceholder: "Наприклад: Карпюк 7 клас unit 3",
     filterLanguage: "Мова",
     filterNative: "Мова перекладу",
     filterLevel: "Рівень",
     filterCategory: "Категорія",
-    filterTextbook: "Підручник",
-    filterGrade: "Клас",
     filterAny: "Усі",
     apply: "Показати",
     reset: "Скинути",
@@ -256,9 +243,6 @@ const STRINGS = {
     getItOn: "Get it on",
     downloadOn: "Download on the",
     storesNote: "The app for iPhone and Android",
-    textbook: "Textbook",
-    grade: "Grade",
-    unit: "Unit",
     level: "Level",
     original: "Word",
     translation: "Translation",
@@ -297,17 +281,15 @@ const STRINGS = {
     fallbackDescription: "{0} with translations in the “{1}” deck{2}. Learn them with flashcards, a quiz, writing and matching in Atom Translate.",
     fallbackBy: " by {0}",
     catalogTitle: "Vocabulary decks with translations",
-    catalogDescription: "Public vocabulary decks on Atom Translate by textbook, grade, level and topic. Open any of them and take a test right in your browser.",
+    catalogDescription: "Public vocabulary decks on Atom Translate by level and topic, including decks for school textbooks. Open any of them and take a test right in your browser.",
     catalogH1: "Vocabulary decks",
-    catalogIntro: "Decks shared by Atom Translate users. Search by name, textbook, grade or topic.",
+    catalogIntro: "Decks shared by Atom Translate users. Search by name or description: textbook, grade, topic.",
     search: "Search",
     searchPlaceholder: "For example: Headway unit 3",
     filterLanguage: "Language",
     filterNative: "Translation language",
     filterLevel: "Level",
     filterCategory: "Category",
-    filterTextbook: "Textbook",
-    filterGrade: "Grade",
     filterAny: "Any",
     apply: "Show",
     reset: "Reset",

@@ -1,5 +1,5 @@
-// GET /decks — the public deck catalog: search, filters (language pair, level, category,
-// textbook, grade) and pagination, all server-rendered with plain <a> links and a GET <form>, so
+// GET /decks — the public deck catalog: search, filters (language pair, level, category) and
+// pagination, all server-rendered with plain <a> links and a GET <form>, so
 // a crawler can walk from here to every deck. Ukrainian, like most public decks' audience.
 //
 // Search and ranking are public.search_public_folders (cloud migration 0029) — the same function
@@ -11,7 +11,7 @@
 // combination of filters.
 
 import { SITE_ORIGIN, escapeHtml, searchDecks, fetchDeckFacets } from "../_lib/community.js";
-import { strings, fmt, countLabel, languageName, categoryName, gradeLabel, wordsPhrase, deckLang } from "../_lib/deck-i18n.js";
+import { strings, fmt, countLabel, languageName, categoryName, wordsPhrase, deckLang } from "../_lib/deck-i18n.js";
 import { deckSlug } from "../_lib/slug.js";
 import { documentShell, headerHtml, footerHtml, pageHeaders, deckPath } from "../_lib/deck-page.js";
 import { cacheKeyFor, fromCache, toCache, messageResponse, headFrom } from "../_lib/deck-route.js";
@@ -19,7 +19,7 @@ import { cacheKeyFor, fromCache, toCache, messageResponse, headFrom } from "../_
 const LANG = "uk";
 const PAGE_SIZE = 24;
 const MIN_WORDS = 1;
-const FILTERS = ["language", "native", "level", "category", "textbook", "grade"];
+const FILTERS = ["language", "native", "level", "category"];
 
 function readQuery(url) {
   const get = (name, max) => String(url.searchParams.get(name) || "").trim().slice(0, max);
@@ -30,8 +30,6 @@ function readQuery(url) {
     native: get("native", 64),
     level: get("level", 16),
     category: get("category", 64),
-    textbook: get("textbook", 120),
-    grade: get("grade", 20),
     page,
   };
 }
@@ -71,7 +69,6 @@ function deckCardHtml(folder, s) {
   const lang = deckLang(folder);
   const href = `${SITE_ORIGIN}${deckPath(folder.short_id, deckSlug(folder, lang))}`;
   const pair = [languageName(LANG, folder.language), languageName(LANG, folder.native_language)].filter(Boolean).join(" → ");
-  const book = [folder.textbook, gradeLabel(LANG, folder.grade), folder.unit].filter((v) => v && String(v).trim()).join(" · ");
   const chips = [
     { text: pair, kind: "language" },
     { text: folder.level, kind: "level" },
@@ -83,7 +80,6 @@ function deckCardHtml(folder, s) {
         <a href="${escapeHtml(href)}">
           <h2 class="deck-card__name">${escapeHtml(folder.name)}</h2>
           <span class="deck-card__count">${escapeHtml(wordsPhrase(LANG, count, folder.language))}</span>
-          ${book ? `<span class="deck-card__book">${escapeHtml(book)}</span>` : ""}
           ${folder.description ? `<span class="deck-card__desc">${escapeHtml(String(folder.description).trim().slice(0, 140))}</span>` : ""}
           ${chips.length ? `<span class="deck-card__chips">${chips.map((c) => `<span class="chip chip--${c.kind}">${escapeHtml(c.text)}</span>`).join("")}</span>` : ""}
         </a>
@@ -128,8 +124,6 @@ export async function onRequestGet(context) {
         nativeLanguage: state.native,
         category: state.category,
         level: state.level,
-        textbook: state.textbook,
-        grade: state.grade,
         minWords: MIN_WORDS,
         limit: PAGE_SIZE,
         offset: (state.page - 1) * PAGE_SIZE,
@@ -154,8 +148,6 @@ export async function onRequestGet(context) {
     ${selectHtml("native", s.filterNative, state.native, facetOptions(facets, "native_language", (v) => languageName(LANG, v)), s)}
     ${selectHtml("level", s.filterLevel, state.level, facetOptions(facets, "level", (v) => v), s)}
     ${selectHtml("category", s.filterCategory, state.category, facetOptions(facets, "category", (v) => categoryName(LANG, v)), s)}
-    ${selectHtml("textbook", s.filterTextbook, state.textbook, facetOptions(facets, "textbook", (v) => v), s)}
-    ${selectHtml("grade", s.filterGrade, state.grade, facetOptions(facets, "grade", (v) => gradeLabel(LANG, v)), s)}
     <div class="filters__actions">
       <button class="btn btn--primary" type="submit">${escapeHtml(s.apply)}</button>
       ${filtered ? `<a class="btn btn--secondary" href="/decks">${escapeHtml(s.reset)}</a>` : ""}

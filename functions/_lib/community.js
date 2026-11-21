@@ -337,15 +337,15 @@ export async function fetchDeckLearners(folderId) {
  * One catalog page: { rows, total }. Search/filters/ranking are search_public_folders
  * (migration 0029); without it, a plain newest-first list with the filters it can still apply.
  */
-export async function searchDecks({ search, language, nativeLanguage, category, level, textbook, grade, minWords = 0, limit, offset }) {
+export async function searchDecks({ search, language, nativeLanguage, category, level, minWords = 0, limit, offset }) {
   const args = {
     p_search: search || null,
     p_language: language || null,
     p_native_language: nativeLanguage || null,
     p_category: category || null,
     p_level: level || null,
-    p_textbook: textbook || null,
-    p_grade: grade || null,
+    p_textbook: null,
+    p_grade: null,
     p_min_words: minWords,
   };
   const [listRes, countRes] = await Promise.all([

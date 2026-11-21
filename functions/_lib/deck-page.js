@@ -15,7 +15,7 @@ import {
 } from "./community.js";
 import { sectionSlug } from "./slug.js";
 import {
-  strings, fmt, plural, countLabel, wordsPhrase, languageName, categoryName, gradeLabel, modeName,
+  strings, fmt, plural, countLabel, wordsPhrase, languageName, categoryName, modeName,
   LANGUAGE_CODES,
 } from "./deck-i18n.js";
 
@@ -187,7 +187,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=6">
+<link rel="stylesheet" href="/assets/deck.css?v=7">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -213,14 +213,7 @@ export function deckFacts(folder, sections, lang) {
   const wordCount = publicWordCount || Number(folder.word_count) || 0;
   const language = folder.language || "";
   const phrase = wordsPhrase(lang, wordCount, lang === "uk" ? language : languageName(lang, language));
-  const nameLower = String(folder.name || "").toLowerCase();
-  const notInName = (v) => v && !nameLower.includes(String(v).toLowerCase());
-  const qualifiers = [
-    notInName(folder.textbook) ? folder.textbook.trim() : "",
-    gradeLabel(lang, folder.grade),
-    notInName(folder.unit) ? folder.unit.trim() : "",
-    folder.level || "",
-  ].filter(Boolean);
+  const qualifiers = [folder.level || ""].filter(Boolean);
   const subtitle = `${phrase} ${s.withTranslation}`;
   const title = `${folder.name} — ${subtitle}${qualifiers.length ? ` (${qualifiers.join(", ")})` : ""} | Atom Translate`;
   return { wordCount, subtitle, title, qualifiers };
@@ -362,11 +355,6 @@ function chipsHtml(folder, s, lang) {
   const languagePair = [languageName(lang, folder.language), languageName(lang, folder.native_language)]
     .filter(Boolean).join(" → ");
   const chips = [
-    ...[
-      folder.textbook ? `${s.textbook}: ${folder.textbook.trim()}` : "",
-      gradeLabel(lang, folder.grade),
-      folder.unit ? folder.unit.trim() : "",
-    ].filter(Boolean).map((text) => ({ text, kind: "book" })),
     { text: languagePair, kind: "language" },
     { text: categoryName(lang, folder.category), kind: "category" },
     { text: folder.level ? `${s.level} ${folder.level}` : "", kind: "level" },
@@ -552,7 +540,7 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
   const count = section.words.length;
   const phrase = wordsPhrase(lang, count, lang === "uk" ? folder.language : languageName(lang, folder.language));
   const subtitle = `${phrase} ${s.withTranslation}`;
-  const qualifiers = [gradeLabel(lang, folder.grade), folder.level || ""].filter(Boolean);
+  const qualifiers = [folder.level || ""].filter(Boolean);
   const title = `${section.name} — ${folder.name}: ${subtitle}${qualifiers.length ? ` (${qualifiers.join(", ")})` : ""} | Atom Translate`;
   const description = section.description && section.description.trim()
     ? truncate(section.description, 160)

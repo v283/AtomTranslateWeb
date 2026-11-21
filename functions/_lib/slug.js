@@ -63,22 +63,12 @@ export function slugify(...parts) {
   return slug || "words";
 }
 
-// The grade is stored free-form ("7", "7 клас", "Grade 7"); a bare number reads better in a
-// slug with the word added: "7-klas".
-function gradePart(grade, lang) {
-  const value = String(grade ?? "").trim();
-  if (!value) return "";
-  if (/^\d{1,2}$/.test(value)) return lang === "uk" ? `${value} клас` : `grade ${value}`;
-  return value;
-}
-
-/** Slug of a deck row: name + textbook + grade + unit, in that order, without repeats. */
-export function deckSlug(folder, lang) {
-  const parts = [folder.name, folder.textbook, gradePart(folder.grade, lang), folder.unit];
-  // Drop a part that the name already contains ("Karpiuk 7 Unit 3" + textbook "Karpiuk").
-  const name = transliterate(folder.name);
-  const unique = parts.filter((part, i) => i === 0 || !part || !name.includes(transliterate(part).trim()));
-  return slugify(...unique);
+/**
+ * Slug of a deck row: its name. (Textbook, grade and unit were dropped from the apps; the deck's
+ * description carries that context now.)
+ */
+export function deckSlug(folder) {
+  return slugify(folder.name);
 }
 
 // Section pages: /decks/{CODE}/{deck-slug}/{section-slug}-{first 6 hex of the section id}. The id
