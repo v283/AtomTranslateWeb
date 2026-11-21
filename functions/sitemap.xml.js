@@ -1,11 +1,16 @@
-// GET /sitemap.xml — static landing pages plus up to MAX_DECKS public community decks
-// (/community/{short_id}, lastmod = folders.updated_at). Replaces the old hand-written static
+// GET /sitemap.xml — static landing pages, the /decks catalog, and up to MAX_DECKS public decks
+// at their canonical /decks/{short_id}/{slug} URL (lastmod = folders.updated_at). Decks below
+// MIN_INDEXABLE_WORDS are left out: their pages are noindex. The old /community/{short_id} URLs
+// are gone from here — on atomtranslate.com they 301 to /decks. Replaces the old hand-written static
 // sitemap.xml. Deck rows come from fetchPublicFolderIndex (Supabase REST, anon key, RLS-scoped —
 // same mechanism as the community page). If that lookup fails the response is still a valid
 // 200 sitemap with just the static pages (or the decks fetched before a later page failed),
 // cached briefly so it recovers on its own.
 
 import { SITE_ORIGIN, fetchPublicFolderIndex } from "./_lib/community.js";
+import { deckLang } from "./_lib/deck-i18n.js";
+import { deckSlug } from "./_lib/slug.js";
+import { deckPath, MIN_INDEXABLE_WORDS } from "./_lib/deck-page.js";
 
 const MAX_DECKS = 5000;
 
@@ -32,6 +37,7 @@ const STATIC_PAGES = [
   { path: "/uk/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/report.html" },
   { path: "/privacy-policy.html" },
+  { path: "/decks" },
 ];
 
 function escapeXml(value) {
@@ -62,8 +68,9 @@ function buildSitemap(decks) {
     const shortId = String(deck.short_id || "").trim();
     const key = shortId.toUpperCase();
     if (!shortId || seen.has(key)) continue;
+    if ((Number(deck.word_count) || 0) < MIN_INDEXABLE_WORDS) continue;
     seen.add(key);
-    entries.push(urlEntry(`${SITE_ORIGIN}/community/${encodeURIComponent(shortId)}`, {
+    entries.push(urlEntry(`${SITE_ORIGIN}${deckPath(shortId, deckSlug(deck, deckLang(deck)))}`, {
       lastmod: toW3cDate(deck.updated_at),
     }));
   }
