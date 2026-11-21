@@ -90,17 +90,31 @@ const ICONS = {
 
 /* ------------------------------------------------------------------------------- chrome */
 
-function headerHtml(s, { homeHref }) {
+/**
+ * Site header, after the pattern of public set pages elsewhere (logo left; the way into the web
+ * app and the theme switch right): compact store links on wide screens, "Web app" everywhere.
+ * `webLink` is the same deck or section in app.atomtranslate.com's public Community, which opens
+ * without signing in; pages that are not about one deck pass nothing and get Community itself.
+ * On phones the store links live in the footer; the iOS Smart App Banner and the Android bar
+ * handle "open in the app" there.
+ */
+function headerHtml(s, { homeHref, webLink }) {
+  const web = webLink || `${WEB_APP_ORIGIN}/community`;
   return `
 <header class="top">
   <a class="brand" href="${escapeHtml(homeHref)}">
     <img src="/apple-touch-icon.png" width="32" height="32" alt="">
     <span>Atom Translate</span>
   </a>
-  <button class="theme-toggle" type="button" hidden data-theme-toggle
-    data-label-light="${escapeHtml(s.themeToLight)}" data-label-dark="${escapeHtml(s.themeToDark)}">
-    <span class="icon-sun">${ICONS.sun}</span><span class="icon-moon">${ICONS.moon}</span>
-  </button>
+  <div class="top__actions">
+    <a class="top-store" href="${PLAY_STORE_URL}">${ICONS.googlePlay}<span class="sr-only">${escapeHtml(s.getItOn)} </span><span>Google Play</span></a>
+    <a class="top-store" href="${APP_STORE_URL}">${ICONS.apple}<span class="sr-only">${escapeHtml(s.downloadOn)} </span><span>App Store</span></a>
+    <a class="top-web" href="${escapeHtml(web)}">${ICONS.browser}<span>${escapeHtml(s.webVersion)}</span></a>
+    <button class="theme-toggle" type="button" hidden data-theme-toggle
+      data-label-light="${escapeHtml(s.themeToLight)}" data-label-dark="${escapeHtml(s.themeToDark)}">
+      <span class="icon-sun">${ICONS.sun}</span><span class="icon-moon">${ICONS.moon}</span>
+    </button>
+  </div>
 </header>`;
 }
 
@@ -108,6 +122,7 @@ function footerHtml(s, lang) {
   const home = lang === "uk" ? "/uk/" : "/";
   return `
 <footer class="foot">
+  <div class="foot__stores">${storeBadgesHtml(s)}</div>
   <nav aria-label="Atom Translate">
     <a href="/decks">${escapeHtml(s.allDecks)}</a>
     <a href="${SITE_ORIGIN}${home}">Atom Translate</a>
@@ -172,7 +187,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=5">
+<link rel="stylesheet" href="/assets/deck.css?v=6">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -386,20 +401,18 @@ function pageDataFor({ lang, s, shortId, variant, quizSections, fullTestUrl, fir
   };
 }
 
-/**
- * `webLink`: the same deck or section in the web app's Community (app.atomtranslate.com), which
- * opens without signing in: there people browse the deck, and once signed in add it to their
- * library and study it. That page is noindex with its canonical pointing back here.
- */
-function heroCtaHtml(s, { isMain, appLink, hasQuiz, webLink }) {
+function heroCtaHtml(s, { isMain, appLink, hasQuiz }) {
   return `<div class="cta" data-hero-cta>
       ${hasQuiz ? `<a class="btn btn--primary" href="#quiz" data-start-quiz hidden>${escapeHtml(s.demoTest)}</a>` : ""}
       ${isMain ? `<a class="btn btn--secondary only-touch" href="${escapeHtml(appLink)}">${ICONS.phone}<span>${escapeHtml(s.openInApp)}</span></a>` : ""}
-      ${webLink ? `<a class="btn btn--secondary" href="${escapeHtml(webLink)}">${ICONS.browser}<span>${escapeHtml(s.openInWeb)}</span></a>` : ""}
     </div>`;
 }
 
-/** The web app's Community page of a deck, or of one of its sections. */
+/**
+ * The web app's Community page of a deck, or of one of its sections (app.atomtranslate.com, no
+ * sign-in needed): there people browse it and, once signed in, add it to their library. That page
+ * is noindex with its canonical pointing back here.
+ */
 function webCommunityLink(shortId, sectionId) {
   const deck = `${WEB_APP_ORIGIN}/community/folder/${encodeURIComponent(shortId)}`;
   return sectionId ? `${deck}/section/${encodeURIComponent(sectionId)}` : deck;
@@ -460,7 +473,7 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
 
   const bodyHtml = `
 ${androidBannerHtml(s, intentUrl(shortId))}
-${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
+${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, webLink: webCommunityLink(folder.short_id) })}
 <main class="page">
   <nav class="crumbs" aria-label="Breadcrumb">
     <ol><li><a href="/decks">${escapeHtml(s.decks)}</a></li><li aria-current="page">${escapeHtml(folder.name)}</li></ol>
@@ -477,9 +490,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
     ${chipsHtml(folder, s, lang)}
     ${folder.description && folder.description.trim() ? `<p class="hero__desc">${escapeHtml(folder.description.trim())}</p>` : ""}
     ${learnersHtml ? `<p class="stats">${learnersHtml}</p>` : ""}
-    ${heroCtaHtml(s, { isMain, appLink, hasQuiz, webLink: webCommunityLink(folder.short_id) })}
-    ${storeBadgesHtml(s)}
-    <p class="hint">${escapeHtml(s.alreadyHaveApp)}</p>
+    ${heroCtaHtml(s, { isMain, appLink, hasQuiz })}
   </section>
 
   ${hasQuiz ? quizPanelHtml(s) : ""}
@@ -554,7 +565,7 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
 
   const bodyHtml = `
 ${androidBannerHtml(s, intentUrl(shortId))}
-${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
+${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, webLink: webCommunityLink(folder.short_id, section.id) })}
 <main class="page">
   <nav class="crumbs" aria-label="Breadcrumb">
     <ol>
@@ -571,8 +582,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
     <div class="hero__meta">${author?.id ? authorHtml(author, s) : ""}</div>
     ${chipsHtml(folder, s, lang)}
     ${section.description && section.description.trim() ? `<p class="hero__desc">${escapeHtml(section.description.trim())}</p>` : ""}
-    ${heroCtaHtml(s, { isMain: true, appLink, hasQuiz, webLink: webCommunityLink(folder.short_id, section.id) })}
-    ${storeBadgesHtml(s)}
+    ${heroCtaHtml(s, { isMain: true, appLink, hasQuiz })}
   </section>
 
   ${hasQuiz ? quizPanelHtml(s) : ""}
@@ -659,7 +669,6 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
     <h1>${escapeHtml(title)}</h1>
     <p class="hero__desc">${escapeHtml(body)}</p>
     <div class="cta"><a class="btn btn--primary" href="${SITE_ORIGIN}/decks">${escapeHtml(s.allDecks)}</a></div>
-    ${storeBadgesHtml(s)}
   </section>
 </main>
 ${footerHtml(s, lang)}`,

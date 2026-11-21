@@ -107,6 +107,38 @@ a { color: var(--accent-text); }
 
 .brand img { border-radius: 22%; }
 
+.top__actions { display: flex; align-items: center; gap: 8px; }
+
+/* Compact store links: wide screens only (phones get the OS app banners and the footer). */
+.top-store {
+  display: none; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px;
+  border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface);
+  color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap;
+}
+.top-store svg { width: 16px; height: 16px; }
+.top-store:hover { border-color: var(--accent); }
+
+/* The way into the web app: the header's one accent element, as "Log in" is elsewhere. */
+.top-web {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--accent); background: var(--accent-soft);
+  color: var(--accent-text); text-decoration: none; font-size: 14px; font-weight: 700; white-space: nowrap;
+}
+.top-web svg { width: 16px; height: 16px; }
+.top-web:hover { background: color-mix(in srgb, var(--accent-soft) 80%, var(--accent)); }
+
+@media (min-width: 721px) {
+  .top-store { display: inline-flex; }
+  .foot__stores { display: none; }
+}
+@media (max-width: 400px) {
+  .top-web svg { display: none; }
+  .top__actions { gap: 6px; }
+}
+
+.foot__stores { margin-bottom: 12px; }
+.foot .store { color: var(--text); }
+
 .theme-toggle {
   display: inline-flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; border-radius: 50%;
