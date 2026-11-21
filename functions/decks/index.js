@@ -134,6 +134,9 @@ export async function onRequestGet(context) {
     return messageResponse("unavailable", url, LANG);
   }
 
+  // A page number past the end is not an empty page but no page at all: 404, not a soft-404 200.
+  if (state.page > 1 && result.rows.length === 0) return messageResponse("notFound", url, LANG);
+
   const filtered = Boolean(state.q) || FILTERS.some((name) => state[name]);
   const canonical = `${SITE_ORIGIN}/decks${state.page > 1 && !filtered ? `?page=${state.page}` : ""}`;
   const title = `${s.catalogTitle}${state.page > 1 ? ` — ${fmt(s.page, state.page)}` : ""} | Atom Translate`;

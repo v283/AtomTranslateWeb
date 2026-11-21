@@ -126,7 +126,9 @@ export async function renderSection({ url, folder, idPart, requestedPath }) {
   const lang = deckLang(folder);
   let content;
   try {
-    content = await fetchDeckContent(folder.id);
+    content = await fetchDeckContent(folder.id, {
+      pickSection: (sections) => sections.find((sec) => sec.id.replace(/-/g, "").toLowerCase().startsWith(idPart)),
+    });
   } catch {
     return { response: await messageResponse("unavailable", url, lang) };
   }

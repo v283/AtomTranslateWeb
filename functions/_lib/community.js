@@ -203,7 +203,10 @@ async function createSignedImageUrls(paths) {
 
 const BASE_DECK_COLUMNS = "id,user_id,author_id,name,short_id,category,level,language,native_language,author_name,word_count,section_count,clone_count,created_at,updated_at";
 const DECK_INFO_COLUMNS = "description,textbook,grade,unit";
-const MAX_DECK_WORDS = 2000;
+// The deck page lists no words (each section page does); it reads only this many for its demo quiz.
+const DECK_SAMPLE_WORDS = 60;
+// Upper bound on words read for one page (1000 per request), far above any real section.
+const MAX_SECTION_FETCH = 10000;
 
 async function restGet(path, params, extraHeaders = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}?${new URLSearchParams(params)}`, {
@@ -285,36 +288,56 @@ export async function fetchDeckAuthor(folder) {
 }
 
 /**
- * Public sections of the deck with ALL their words (text only), in app order. Words are paged
- * because PostgREST caps a response at 1000 rows; the whole deck is capped at MAX_DECK_WORDS.
+ * Public sections of the deck in app order, each with its real `wordCount` (one request, an
+ * embedded count) and `words` (text only) for the sections whose words were loaded:
+ *  - `pickSection` given (a section page): called with the sections, every word of the one it
+ *    returns (none if it returns nothing), no other words;
+ *  - otherwise (the deck page): a DECK_SAMPLE_WORDS sample (demo quiz, sample words), one query —
+ *    or, when only one section has words, all of them: that section's page is canonicalised to
+ *    the deck page, so the deck page must carry its full list.
  * Throws on an upstream failure.
  */
-export async function fetchDeckContent(folderId) {
+export async function fetchDeckContent(folderId, { pickSection } = {}) {
   const sectionParams = (columns) => ({
     folder_id: `eq.${folderId}`,
     is_public: "eq.true",
     deleted_at: "is.null",
-    select: columns,
+    select: `${columns},words(count)`,
+    "words.deleted_at": "is.null",
     order: "created_at.asc,id.asc",
   });
   let sectionsRes = await restGet("sections", sectionParams("id,name,description,updated_at"));
   if (await isSchemaMismatch(sectionsRes)) sectionsRes = await restGet("sections", sectionParams("id,name,updated_at"));
   if (!sectionsRes.ok) throw new Error(`sections lookup failed: ${sectionsRes.status}`);
   const sections = (await sectionsRes.json()).map((s) => ({
-    id: s.id, name: s.name, description: s.description ?? null, updatedAt: s.updated_at ?? null, words: [],
+    id: s.id,
+    name: s.name,
+    description: s.description ?? null,
+    updatedAt: s.updated_at ?? null,
+    wordCount: Number(s.words?.[0]?.count) || 0,
+    words: [],
   }));
-  if (sections.length === 0) return { sections, truncated: false };
 
-  const byId = new Map(sections.map((s) => [s.id, s]));
-  const ids = sections.map((s) => s.id).join(",");
+  let load;
+  let max;
+  if (pickSection) {
+    const picked = pickSection(sections);
+    load = picked && picked.wordCount > 0 ? [picked] : [];
+    max = MAX_SECTION_FETCH;
+  } else {
+    load = sections.filter((s) => s.wordCount > 0);
+    max = load.length === 1 ? MAX_SECTION_FETCH : DECK_SAMPLE_WORDS;
+  }
+  if (load.length === 0) return { sections };
+
+  const byId = new Map(load.map((s) => [s.id, s]));
+  const filter = load.length === 1 ? `eq.${load[0].id}` : `in.(${load.map((s) => s.id).join(",")})`;
   const pageSize = 1000;
   let fetched = 0;
-  let truncated = false;
-  for (let offset = 0; ; offset += pageSize) {
-    const limit = Math.min(pageSize, MAX_DECK_WORDS - fetched);
-    if (limit <= 0) { truncated = true; break; }
+  for (let offset = 0; fetched < max; offset += pageSize) {
+    const limit = Math.min(pageSize, max - fetched);
     const res = await restGet("words", {
-      section_id: `in.(${ids})`,
+      section_id: filter,
       deleted_at: "is.null",
       select: "section_id,original,translation",
       order: "created_at.asc,id.asc",
@@ -327,7 +350,7 @@ export async function fetchDeckContent(folderId) {
     fetched += page.length;
     if (page.length < limit) break;
   }
-  return { sections, truncated };
+  return { sections };
 }
 
 /** Clones + subscriptions of a public deck (migration 0029), or null when not available. */

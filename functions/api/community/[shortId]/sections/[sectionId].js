@@ -7,12 +7,20 @@
 // serves already-public data.
 
 import { fetchWordsForSection } from "../../../../_lib/community.js";
+import { cacheKeyFor, fromCache, toCache } from "../../../../_lib/deck-route.js";
 
-export async function onRequestGet({ params }) {
+export async function onRequestGet(context) {
+  const { params } = context;
   const sectionId = String(params.sectionId || "").trim();
   if (!sectionId) {
     return Response.json({ words: [] }, { status: 400 });
   }
+
+  // Same edge cache as the deck pages: repeated expands (or a script hammering the URL) don't
+  // reach Supabase more than once per ten minutes per section.
+  const key = cacheKeyFor(new URL(context.request.url));
+  const cached = await fromCache(key);
+  if (cached) return cached;
 
   let words = [];
   try {
@@ -21,7 +29,9 @@ export async function onRequestGet({ params }) {
     return Response.json({ words: [] }, { status: 502 });
   }
 
-  return Response.json({ words }, {
-    headers: { "Cache-Control": "public, max-age=60" },
+  const response = Response.json({ words }, {
+    headers: { "Cache-Control": "public, max-age=60, s-maxage=600" },
   });
+  toCache(context, key, response);
+  return response;
 }
