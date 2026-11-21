@@ -18,13 +18,13 @@ import {
   strings, fmt, plural, countLabel, wordsPhrase, languageName, categoryName, modeName,
   LANGUAGE_CODES,
 } from "./deck-i18n.js";
+import { isIndexableDeck, isIndexableSection } from "./indexing.js";
 
 export const MOBILE_ORIGIN = "https://mobile.atomtranslate.com";
 export const APP_STORE_ID = "6792120675";
 export const ANDROID_PACKAGE = "com.valentineos.atomtranslate";
 
-/** Below this many words a deck page is noindex (thin content), and stays out of the sitemap. */
-export const MIN_INDEXABLE_WORDS = 10;
+export { MIN_INDEXABLE_WORDS } from "./indexing.js";
 
 const MAX_JSON_LD_TERMS = 200;
 const QUIZ_POOL_SIZE = 60;
@@ -435,7 +435,7 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
   const description = deckDescription(folder, facts, authorName, lang);
   const appLink = mobileDeckUrl(shortId);
   const isMain = variant === "main";
-  const indexable = facts.wordCount >= MIN_INDEXABLE_WORDS;
+  const indexable = isIndexableDeck({ name: folder.name, wordCount: facts.wordCount, sectionNames: sections.map((sec) => sec.name) });
   const sectionsWithWords = sections.filter((sec) => sec.words.length > 0);
   const firstRanked = sections.find((sec) => sec.words.length >= 4);
   const hasQuiz = hasQuizWords(sections);
@@ -538,6 +538,11 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
   const prev = index > 0 ? visible[index - 1] : null;
   const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
   const count = section.words.length;
+  const deckIndexable = isIndexableDeck({
+    name: folder.name,
+    wordCount: deckFacts(folder, sections, lang).wordCount,
+    sectionNames: sections.map((sec) => sec.name),
+  });
   const phrase = wordsPhrase(lang, count, lang === "uk" ? folder.language : languageName(lang, folder.language));
   const subtitle = `${phrase} ${s.withTranslation}`;
   const qualifiers = [folder.level || ""].filter(Boolean);
@@ -623,7 +628,7 @@ ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--p
     lang,
     title,
     description,
-    robots: count >= MIN_INDEXABLE_WORDS ? "index,follow,max-image-preview:large" : "noindex,follow",
+    robots: isIndexableSection({ deckIndexable, name: section.name, wordCount: count }) ? "index,follow,max-image-preview:large" : "noindex,follow",
     canonical,
     ogUrl: canonical,
     ogType: "article",

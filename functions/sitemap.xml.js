@@ -1,6 +1,7 @@
 // GET /sitemap.xml — static landing pages, the /decks catalog, and up to MAX_DECKS public decks
-// at their canonical /decks/{short_id}/{slug} URL (lastmod = folders.updated_at). Decks below
-// MIN_INDEXABLE_WORDS are left out: their pages are noindex. The old /community/{short_id} URLs
+// at their canonical /decks/{short_id}/{slug} URL (lastmod = folders.updated_at), plus their section
+// pages. Pages that are noindex are left out: thin or junk decks and sections (_lib/indexing.js —
+// under MIN_INDEXABLE_WORDS words, test/placeholder names). The old /community/{short_id} URLs
 // are gone from here — on atomtranslate.com they 301 to /decks. Replaces the old hand-written static
 // sitemap.xml. Deck rows come from fetchPublicFolderIndex (Supabase REST, anon key, RLS-scoped —
 // same mechanism as the community page). If that lookup fails the response is still a valid
@@ -10,7 +11,8 @@
 import { SITE_ORIGIN, fetchPublicFolderIndex, fetchPublicSectionIndex } from "./_lib/community.js";
 import { deckLang } from "./_lib/deck-i18n.js";
 import { deckSlug, sectionSlug } from "./_lib/slug.js";
-import { deckPath, MIN_INDEXABLE_WORDS } from "./_lib/deck-page.js";
+import { deckPath } from "./_lib/deck-page.js";
+import { isIndexableDeck, isIndexableSection } from "./_lib/indexing.js";
 
 const MAX_DECKS = 5000;
 
@@ -64,20 +66,31 @@ function toW3cDate(value) {
 function buildSitemap(decks, sections = []) {
   const entries = STATIC_PAGES.map((p) => urlEntry(SITE_ORIGIN + p.path, { alternates: p.alternates }));
   const seen = new Set();
+  // Section names per deck, for the "mostly junk sections" rule (isIndexableDeck).
+  const sectionNames = new Map();
+  for (const sec of sections) {
+    const code = String(sec.folder_short_id || "").trim().toUpperCase();
+    if (!sectionNames.has(code)) sectionNames.set(code, []);
+    sectionNames.get(code).push(sec.section_name);
+  }
+  const indexableDecks = new Set();
   for (const deck of decks) {
     const shortId = String(deck.short_id || "").trim();
     const key = shortId.toUpperCase();
     if (!shortId || seen.has(key)) continue;
-    if ((Number(deck.word_count) || 0) < MIN_INDEXABLE_WORDS) continue;
     seen.add(key);
+    if (!isIndexableDeck({ name: deck.name, wordCount: deck.word_count, sectionNames: sectionNames.get(key) || [] })) continue;
+    indexableDecks.add(key);
     entries.push(urlEntry(`${SITE_ORIGIN}${deckPath(shortId, deckSlug(deck, deckLang(deck)))}`, {
       lastmod: toW3cDate(deck.updated_at),
     }));
   }
-  // Section pages (/decks/{CODE}/{slug}/{section}), same 10-word bar as the deck pages.
+  // Section pages (/decks/{CODE}/{slug}/{section}): only inside an indexable deck, same rules.
   for (const sec of sections) {
     const code = String(sec.folder_short_id || "").trim();
-    if (!code || (Number(sec.word_count) || 0) < MIN_INDEXABLE_WORDS) continue;
+    if (!code) continue;
+    const deckIndexable = indexableDecks.has(code.toUpperCase());
+    if (!isIndexableSection({ deckIndexable, name: sec.section_name, wordCount: sec.word_count })) continue;
     const folder = { name: sec.folder_name, native_language: sec.folder_native_language };
     const path = `${deckPath(code, deckSlug(folder, deckLang(folder)))}/${sectionSlug({ id: sec.section_id, name: sec.section_name })}`;
     entries.push(urlEntry(`${SITE_ORIGIN}${path}`, { lastmod: toW3cDate(sec.section_updated_at) }));
