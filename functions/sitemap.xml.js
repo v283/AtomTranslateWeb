@@ -13,6 +13,7 @@ import { deckLang } from "./_lib/deck-i18n.js";
 import { deckSlug, sectionSlug } from "./_lib/slug.js";
 import { deckPath } from "./_lib/deck-page.js";
 import { isIndexableDeck, isIndexableSection } from "./_lib/indexing.js";
+import { cacheKeyFor, fromCache, toCache } from "./_lib/deck-route.js";
 
 const MAX_DECKS = 5000;
 
@@ -112,7 +113,13 @@ ${entries.join("\n")}
 `;
 }
 
-export async function onRequestGet() {
+// The section index counts the words of every public section — the heaviest query the site makes —
+// so a complete sitemap is kept at the edge for its s-maxage instead of rebuilt per request.
+export async function onRequestGet(context) {
+  const key = cacheKeyFor(new URL(context.request.url));
+  const cached = await fromCache(key);
+  if (cached) return cached;
+
   let decks = [];
   let sections = [];
   let degraded = false;
@@ -125,13 +132,15 @@ export async function onRequestGet() {
     degraded = true;
   }
 
-  return new Response(buildSitemap(decks, sections), {
+  const response = new Response(buildSitemap(decks, sections), {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=UTF-8",
       "Cache-Control": degraded ? "public, max-age=300" : "public, max-age=3600, s-maxage=21600",
     },
   });
+  if (!degraded) toCache(context, key, response);
+  return response;
 }
 
 export async function onRequestHead(context) {
