@@ -72,7 +72,11 @@ function deckCardHtml(folder, s) {
   const href = `${SITE_ORIGIN}${deckPath(folder.short_id, deckSlug(folder, lang))}`;
   const pair = [languageName(LANG, folder.language), languageName(LANG, folder.native_language)].filter(Boolean).join(" → ");
   const book = [folder.textbook, gradeLabel(LANG, folder.grade), folder.unit].filter((v) => v && String(v).trim()).join(" · ");
-  const chips = [pair, folder.level, categoryName(LANG, folder.category)].filter(Boolean);
+  const chips = [
+    { text: pair, kind: "language" },
+    { text: folder.level, kind: "level" },
+    { text: categoryName(LANG, folder.category), kind: "category" },
+  ].filter((c) => c.text);
   const count = Number(folder.word_count) || 0;
   return `
       <li class="deck-card">
@@ -81,7 +85,7 @@ function deckCardHtml(folder, s) {
           <span class="deck-card__count">${escapeHtml(wordsPhrase(LANG, count, folder.language))}</span>
           ${book ? `<span class="deck-card__book">${escapeHtml(book)}</span>` : ""}
           ${folder.description ? `<span class="deck-card__desc">${escapeHtml(String(folder.description).trim().slice(0, 140))}</span>` : ""}
-          ${chips.length ? `<span class="deck-card__chips">${chips.map((c) => `<span class="chip">${escapeHtml(c)}</span>`).join("")}</span>` : ""}
+          ${chips.length ? `<span class="deck-card__chips">${chips.map((c) => `<span class="chip chip--${c.kind}">${escapeHtml(c.text)}</span>`).join("")}</span>` : ""}
         </a>
       </li>`;
 }

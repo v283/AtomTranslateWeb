@@ -127,6 +127,8 @@ const STRINGS = {
   uk: {
     withTranslation: "з перекладом",
     by: "Автор",
+    authorProfile: "профіль автора",
+    unknownAuthor: "Автор",
     decks: "Колоди",
     home: "Atom Translate",
     sectionsTitle: "Слова за секціями",
@@ -208,6 +210,8 @@ const STRINGS = {
   en: {
     withTranslation: "with translations",
     by: "By",
+    authorProfile: "author's profile",
+    unknownAuthor: "Author",
     decks: "Decks",
     home: "Atom Translate",
     sectionsTitle: "Words by section",

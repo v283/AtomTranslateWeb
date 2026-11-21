@@ -1,7 +1,7 @@
 // Shared request handling for the deck pages: host rules, edge caching, and the one function
 // that loads + renders a deck for either variant. No onRequest* export: a plain module.
 
-import { SITE_ORIGIN, fetchDeckByShortId, fetchDeckContent, fetchDeckAuthorName, fetchDeckLearners } from "./community.js";
+import { SITE_ORIGIN, fetchDeckByShortId, fetchDeckContent, fetchDeckAuthor, fetchDeckLearners } from "./community.js";
 import { deckLang } from "./deck-i18n.js";
 import { deckSlug } from "./slug.js";
 import { renderDeckPage, renderMessagePage, pageHeaders, deckPath } from "./deck-page.js";
@@ -39,7 +39,15 @@ export function cacheKeyFor(url, extra = "") {
   return new Request(`${url.origin}${url.pathname}${extra}`, { method: "GET" });
 }
 
+// Local `wrangler pages dev` keeps the cache between runs: never cache there, so a code change
+// shows up on the next reload.
+function isLocal(request) {
+  const host = new URL(request.url).hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}
+
 export async function fromCache(key) {
+  if (isLocal(key)) return undefined;
   try {
     return await caches.default.match(key);
   } catch {
@@ -48,7 +56,7 @@ export async function fromCache(key) {
 }
 
 export function toCache(context, key, response) {
-  if (response.status !== 200) return;
+  if (response.status !== 200 || isLocal(key)) return;
   try {
     context.waitUntil(caches.default.put(key, response.clone()));
   } catch {
@@ -92,13 +100,13 @@ export async function renderDeck({ code, url, variant, folder: preloaded }) {
   } catch {
     return messageResponse("unavailable", url, lang);
   }
-  const [authorName, learners] = await Promise.all([fetchDeckAuthorName(folder), fetchDeckLearners(folder.id)]);
+  const [author, learners] = await Promise.all([fetchDeckAuthor(folder), fetchDeckLearners(folder.id)]);
 
   const html = renderDeckPage({
     variant,
     folder,
     sections: content.sections,
-    authorName,
+    author,
     learners,
     lang,
     canonical: `${SITE_ORIGIN}${canonicalDeckPath(folder)}`,

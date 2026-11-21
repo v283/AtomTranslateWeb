@@ -192,7 +192,7 @@ async function createSignedImageUrls(paths) {
  * fallbacks below keep the pages working without them instead of failing.
  * ====================================================================================== */
 
-const BASE_DECK_COLUMNS = "id,user_id,name,short_id,category,level,language,native_language,author_name,word_count,section_count,clone_count,created_at,updated_at";
+const BASE_DECK_COLUMNS = "id,user_id,author_id,name,short_id,category,level,language,native_language,author_name,word_count,section_count,clone_count,created_at,updated_at";
 const DECK_INFO_COLUMNS = "description,textbook,grade,unit";
 const MAX_DECK_WORDS = 2000;
 
@@ -245,16 +245,33 @@ export async function fetchDeckByShortId(shortId) {
   return rows[0] ? withEmptyDeckInfo(rows[0]) : undefined;
 }
 
-/** Author shown on the page: a clone's stored author, else the owner's public profile name. */
-export async function fetchDeckAuthorName(folder) {
-  if (folder.author_name) return folder.author_name;
+// Only avatars from the app's own public bucket are shown: the page's CSP allows that host, and a
+// stored URL pointing anywhere else is not something to put in front of visitors.
+const AVATAR_PREFIX = `${SUPABASE_URL}/storage/v1/object/public/avatars/`;
+
+/**
+ * The deck's author for the page: { id, name, avatarUrl }. The author is author_id when set (a
+ * clone not yet published keeps its source's author), else the owner. Name and photo are read
+ * live from profiles — RLS (migration 0023) shows anon the authors of public decks. A missing
+ * profile still yields the id, so the profile link works; name falls back to the stored one.
+ */
+export async function fetchDeckAuthor(folder) {
+  const id = folder.author_id || folder.user_id;
+  const author = { id, name: String(folder.author_name || "").trim(), avatarUrl: null };
   try {
-    const res = await restGet("profiles", { id: `eq.${folder.user_id}`, select: "username" });
-    if (!res.ok) return "";
-    const rows = await res.json();
-    return String(rows[0]?.username || "").trim();
+    const res = await restGet("profiles", { id: `eq.${id}`, select: "username,avatar_url" });
+    if (!res.ok) return author;
+    const row = (await res.json())[0];
+    if (!row) return author;
+    const name = String(row.username || "").trim();
+    const avatar = String(row.avatar_url || "");
+    return {
+      id,
+      name: name || author.name,
+      avatarUrl: avatar.startsWith(AVATAR_PREFIX) ? avatar : null,
+    };
   } catch {
-    return "";
+    return author;
   }
 }
 

@@ -170,7 +170,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=2">
+<link rel="stylesheet" href="/assets/deck.css?v=4">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -221,6 +221,23 @@ function deckDescription(folder, facts, authorName, lang) {
 
 function capitalize(text) {
   return text ? text[0].toUpperCase() + text.slice(1) : text;
+}
+
+/**
+ * Photo (or the initial on a tinted disc when there is none) + name, linking to the author's
+ * profile in the web app. That route is behind sign-in: a visitor without an account is sent to
+ * the login screen first and lands on the profile after it.
+ */
+function authorHtml(author, s) {
+  const name = author.name || s.unknownAuthor;
+  const initial = Array.from(name.trim())[0]?.toUpperCase() || "?";
+  const picture = author.avatarUrl
+    ? `<img class="author__photo" src="${escapeHtml(author.avatarUrl)}" width="32" height="32" alt="" referrerpolicy="no-referrer">`
+    : `<span class="author__photo author__photo--initial" aria-hidden="true">${escapeHtml(initial)}</span>`;
+  const href = `${WEB_APP_ORIGIN}/community/author/${encodeURIComponent(author.id)}`;
+  return `<a class="author" href="${escapeHtml(href)}">
+        ${picture}<span class="author__text"><small>${escapeHtml(s.by)}</small><span class="author__name">${escapeHtml(name)}</span><span class="sr-only">, ${escapeHtml(s.authorProfile)}</span></span>
+      </a>`;
 }
 
 function intentUrl(shortId) {
@@ -279,13 +296,14 @@ function quizPool(sections) {
  * @param {"main"|"mobile"} p.variant
  * @param {object} p.folder     deck row (fetchDeckByShortId)
  * @param {Array}  p.sections   [{ id, name, words: [{original, translation}] }]
- * @param {string} p.authorName
+ * @param {{id: string, name: string, avatarUrl: string|null}} p.author
  * @param {number|null} p.learners
  * @param {string} p.lang       "uk" | "en"
  * @param {string} p.canonical  absolute /decks URL
  */
-export function renderDeckPage({ variant, folder, sections, authorName, learners, lang, canonical }) {
+export function renderDeckPage({ variant, folder, sections, author, learners, lang, canonical }) {
   const s = strings(lang);
+  const authorName = author?.name || "";
   const shortId = folder.short_id;
   const facts = deckFacts(folder, sections, lang);
   const description = deckDescription(folder, facts, authorName, lang);
@@ -298,10 +316,10 @@ export function renderDeckPage({ variant, folder, sections, authorName, learners
   const languagePair = [languageName(lang, folder.language), languageName(lang, folder.native_language)]
     .filter(Boolean).join(" → ");
   const chips = [
-    languagePair,
-    categoryName(lang, folder.category),
-    folder.level ? `${s.level} ${folder.level}` : "",
-  ].filter(Boolean);
+    { text: languagePair, kind: "language" },
+    { text: categoryName(lang, folder.category), kind: "category" },
+    { text: folder.level ? `${s.level} ${folder.level}` : "", kind: "level" },
+  ].filter((c) => c.text);
   const bookChips = [
     folder.textbook ? `${s.textbook}: ${folder.textbook.trim()}` : "",
     gradeLabel(lang, folder.grade),
@@ -340,8 +358,11 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
   </nav>
   <section class="hero" aria-labelledby="deck-title">
     <h1 id="deck-title"><span class="hero__name">${escapeHtml(folder.name)}</span><span class="hero__sub">${escapeHtml(facts.subtitle)}</span></h1>
-    <p class="hero__meta">${authorName ? `${escapeHtml(s.by)}: ${escapeHtml(authorName)} · ` : ""}${escapeHtml(countLabel(lang, sectionsWithWords.length || Number(folder.section_count) || 0, s.sections))}</p>
-    ${chips.length || bookChips.length ? `<ul class="chips">${[...bookChips.map((c) => `<li class="chip chip--book">${escapeHtml(c)}</li>`), ...chips.map((c) => `<li class="chip">${escapeHtml(c)}</li>`)].join("")}</ul>` : ""}
+    <div class="hero__meta">
+      ${author?.id ? authorHtml(author, s) : ""}
+      <span class="hero__sections">${escapeHtml(countLabel(lang, sectionsWithWords.length || Number(folder.section_count) || 0, s.sections))}</span>
+    </div>
+    ${chips.length || bookChips.length ? `<ul class="chips">${[...bookChips.map((c) => `<li class="chip chip--book">${escapeHtml(c)}</li>`), ...chips.map((c) => `<li class="chip chip--${c.kind}">${escapeHtml(c.text)}</li>`)].join("")}</ul>` : ""}
     ${folder.description && folder.description.trim() ? `<p class="hero__desc">${escapeHtml(folder.description.trim())}</p>` : ""}
     ${learnersHtml}
     <div class="cta" data-hero-cta>
