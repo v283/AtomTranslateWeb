@@ -84,6 +84,7 @@ const ICONS = {
   phone: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></g></svg>`,
   close: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>`,
   googlePlay: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>`,
+  browser: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M2.5 8.5h19"/><path d="M6 6.25h.01M8.5 6.25h.01"/></g></svg>`,
   apple: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>`,
 };
 
@@ -385,11 +386,23 @@ function pageDataFor({ lang, s, shortId, variant, quizSections, fullTestUrl, fir
   };
 }
 
-function heroCtaHtml(s, { isMain, appLink, hasQuiz }) {
+/**
+ * `webLink`: the same deck or section in the web app's Community (app.atomtranslate.com), which
+ * opens without signing in: there people browse the deck, and once signed in add it to their
+ * library and study it. That page is noindex with its canonical pointing back here.
+ */
+function heroCtaHtml(s, { isMain, appLink, hasQuiz, webLink }) {
   return `<div class="cta" data-hero-cta>
       ${hasQuiz ? `<a class="btn btn--primary" href="#quiz" data-start-quiz hidden>${escapeHtml(s.demoTest)}</a>` : ""}
       ${isMain ? `<a class="btn btn--secondary only-touch" href="${escapeHtml(appLink)}">${ICONS.phone}<span>${escapeHtml(s.openInApp)}</span></a>` : ""}
+      ${webLink ? `<a class="btn btn--secondary" href="${escapeHtml(webLink)}">${ICONS.browser}<span>${escapeHtml(s.openInWeb)}</span></a>` : ""}
     </div>`;
+}
+
+/** The web app's Community page of a deck, or of one of its sections. */
+function webCommunityLink(shortId, sectionId) {
+  const deck = `${WEB_APP_ORIGIN}/community/folder/${encodeURIComponent(shortId)}`;
+  return sectionId ? `${deck}/section/${encodeURIComponent(sectionId)}` : deck;
 }
 
 /** Path part of an absolute URL: links between our own pages stay on the current host. */
@@ -464,7 +477,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
     ${chipsHtml(folder, s, lang)}
     ${folder.description && folder.description.trim() ? `<p class="hero__desc">${escapeHtml(folder.description.trim())}</p>` : ""}
     ${learnersHtml ? `<p class="stats">${learnersHtml}</p>` : ""}
-    ${heroCtaHtml(s, { isMain, appLink, hasQuiz })}
+    ${heroCtaHtml(s, { isMain, appLink, hasQuiz, webLink: webCommunityLink(folder.short_id) })}
     ${storeBadgesHtml(s)}
     <p class="hint">${escapeHtml(s.alreadyHaveApp)}</p>
   </section>
@@ -558,7 +571,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
     <div class="hero__meta">${author?.id ? authorHtml(author, s) : ""}</div>
     ${chipsHtml(folder, s, lang)}
     ${section.description && section.description.trim() ? `<p class="hero__desc">${escapeHtml(section.description.trim())}</p>` : ""}
-    ${heroCtaHtml(s, { isMain: true, appLink, hasQuiz })}
+    ${heroCtaHtml(s, { isMain: true, appLink, hasQuiz, webLink: webCommunityLink(folder.short_id, section.id) })}
     ${storeBadgesHtml(s)}
   </section>
 
