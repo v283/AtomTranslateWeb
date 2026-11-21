@@ -11,7 +11,7 @@
 // mini-quiz, leaderboard teaser, Android app banner, sticky mobile CTA.
 
 import {
-  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, SUPABASE_URL, escapeHtml,
+  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, SUPABASE_URL, escapeHtml, breakableHtml,
 } from "./community.js";
 import { sectionSlug } from "./slug.js";
 import {
@@ -187,7 +187,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=7">
+<link rel="stylesheet" href="/assets/deck.css?v=8">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -448,7 +448,7 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
       <li><a class="sec-card" href="${escapeHtml(`${pathOf(canonical)}/${sectionSlug(sec)}`)}">
         <span class="sec-card__icon"><img src="/assets/icons/books.png" width="36" height="36" alt=""></span>
         <span class="sec-card__body">
-          <span class="sec-card__name">${escapeHtml(sec.name)}</span>
+          <span class="sec-card__name">${breakableHtml(sec.name)}</span>
           <span class="sec-card__count">${escapeHtml(countLabel(lang, sec.words.length, s.words))}</span>
           ${sec.description ? `<span class="sec-card__desc">${escapeHtml(truncate(sec.description, 120))}</span>` : ""}
         </span>
@@ -469,7 +469,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
   <section class="hero" aria-labelledby="deck-title">
     <div class="hero__head">
       <span class="hero__icon"><img src="/assets/icons/open_file_folder.png" width="44" height="44" alt=""></span>
-      <h1 id="deck-title"><span class="hero__name">${escapeHtml(folder.name)}</span><span class="hero__sub">${escapeHtml(facts.subtitle)}</span></h1>
+      <h1 id="deck-title"><span class="hero__name">${breakableHtml(folder.name)}</span><span class="hero__sub">${escapeHtml(facts.subtitle)}</span></h1>
     </div>
     <div class="hero__meta">
       ${author?.id ? authorHtml(author, s) : ""}
@@ -565,7 +565,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
   <section class="hero" aria-labelledby="section-title">
     <div class="hero__head">
       <span class="hero__icon"><img src="/assets/icons/books.png" width="44" height="44" alt=""></span>
-      <h1 id="section-title"><span class="hero__name">${escapeHtml(section.name)}</span><span class="hero__sub">${escapeHtml(`${folder.name} · ${subtitle}`)}</span></h1>
+      <h1 id="section-title"><span class="hero__name">${breakableHtml(section.name)}</span><span class="hero__sub">${escapeHtml(`${folder.name} · ${subtitle}`)}</span></h1>
     </div>
     <div class="hero__meta">${author?.id ? authorHtml(author, s) : ""}</div>
     ${chipsHtml(folder, s, lang)}

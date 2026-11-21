@@ -10,7 +10,7 @@
 // or filter makes the page noindex,follow — the decks it links to are what should rank, not every
 // combination of filters.
 
-import { SITE_ORIGIN, escapeHtml, searchDecks, fetchDeckFacets } from "../_lib/community.js";
+import { SITE_ORIGIN, escapeHtml, breakableHtml, searchDecks, fetchDeckFacets } from "../_lib/community.js";
 import { strings, fmt, countLabel, languageName, categoryName, wordsPhrase, deckLang } from "../_lib/deck-i18n.js";
 import { deckSlug } from "../_lib/slug.js";
 import { documentShell, headerHtml, footerHtml, pageHeaders, deckPath } from "../_lib/deck-page.js";
@@ -78,7 +78,7 @@ function deckCardHtml(folder, s) {
   return `
       <li class="deck-card">
         <a href="${escapeHtml(href)}">
-          <h2 class="deck-card__name">${escapeHtml(folder.name)}</h2>
+          <h2 class="deck-card__name">${breakableHtml(folder.name)}</h2>
           <span class="deck-card__count">${escapeHtml(wordsPhrase(LANG, count, folder.language))}</span>
           ${folder.description ? `<span class="deck-card__desc">${escapeHtml(String(folder.description).trim().slice(0, 140))}</span>` : ""}
           ${chips.length ? `<span class="deck-card__chips">${chips.map((c) => `<span class="chip chip--${c.kind}">${escapeHtml(c.text)}</span>`).join("")}</span>` : ""}

@@ -179,6 +179,8 @@ a { color: var(--accent-text); }
   width: 72px; height: 72px; border-radius: 18px; background: var(--accent-soft);
 }
 .hero__name { display: block; font-size: 28px; overflow-wrap: anywhere; }
+/* Narrow phones: a little smaller, so a one-word name fits beside the icon. */
+@media (max-width: 400px) { .hero__name { font-size: 24px; } }
 .hero__sub { display: block; margin-top: 4px; font-size: 17px; font-weight: 600; color: var(--text-muted); }
 .hero--message h1 { font-size: 24px; }
 

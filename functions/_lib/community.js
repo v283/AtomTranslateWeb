@@ -40,6 +40,15 @@ export function escapeHtml(value) {
   }[c]));
 }
 
+/**
+ * escapeHtml plus a line-break opportunity (<wbr>) after each _ - . / — a long one-word name such
+ * as "english_please" then wraps at its own separators on a phone instead of mid-word. Entities
+ * escapeHtml produces contain none of these characters, so they are never split.
+ */
+export function breakableHtml(value) {
+  return escapeHtml(value).replace(/([_\-./])(?=.)/g, "$1<wbr>");
+}
+
 export function wordCountLabel(count) {
   return count === 1 ? "1 word" : `${count} words`;
 }
