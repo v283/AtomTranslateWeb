@@ -52,6 +52,10 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` must win over the display rules below (banner, theme toggle, panels): those parts
+   are revealed by deck.js only where they apply. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -252,6 +256,8 @@ a { color: var(--accent-text); }
 .sticky-cta.is-shown { transform: translateY(0); }
 .sticky-cta .btn { width: 100%; }
 @media (min-width: 721px) { .sticky-cta { display: none; } }
+/* Room for the bar, so it never covers the end of the footer. */
+@media (max-width: 720px) { body.has-sticky-cta { padding-bottom: 80px; } }
 
 /* ------------------------------------------------------------------ catalog */
 

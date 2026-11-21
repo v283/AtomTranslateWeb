@@ -222,7 +222,7 @@
     fetch("/api/decks/" + encodeURIComponent(data.code) + "/leaderboard", { headers: { Accept: "application/json" } })
       .then(function (res) { return res.ok ? res.json() : null; })
       .then(function (teaser) {
-        if (!teaser) return;
+        if (!teaser || teaser.unavailable) return;
         body.textContent = "";
         if (!teaser.entries || teaser.entries.length === 0) {
           // Nobody has played yet. Only worth saying if there is a section to play.
@@ -264,6 +264,7 @@
     var hero = document.querySelector("[data-hero-cta]");
     if (!bar || !hero || !("IntersectionObserver" in window)) return;
     bar.hidden = false;
+    document.body.classList.add("has-sticky-cta");
     // Only while the hero button is off screen: one main call to action on screen at a time.
     new IntersectionObserver(function (entries) {
       var visible = entries[0] && entries[0].isIntersecting;

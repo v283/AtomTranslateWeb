@@ -7,7 +7,8 @@
 // to visitors, not published to search engines. Same-origin so the page's CSP connect-src 'self'
 // covers it, and cached at the edge so crawlers and visitors don't each hit the API.
 //
-// Any failure answers 502 and the page simply leaves the teaser out.
+// An upstream failure answers 200 { unavailable: true } (not 502, which the browser would log as
+// a console error on every page view); the page then leaves the teaser out.
 
 import { fetchDeckByShortId } from "../../../_lib/community.js";
 import { SHORT_ID_RE, cacheKeyFor, fromCache, toCache } from "../../../_lib/deck-route.js";
@@ -20,6 +21,10 @@ const JSON_HEADERS = {
   "X-Robots-Tag": "noindex",
   "X-Content-Type-Options": "nosniff",
 };
+
+function unavailable() {
+  return json({ unavailable: true, entries: [] }, 200, "public, max-age=60");
+}
 
 function json(body, status, cacheControl) {
   return new Response(JSON.stringify(body), {
@@ -41,7 +46,7 @@ export async function onRequestGet(context) {
   try {
     folder = await fetchDeckByShortId(code);
   } catch {
-    return json({ error: "unavailable" }, 502, "no-store");
+    return unavailable();
   }
   if (!folder) return json({ error: "not_found" }, 404, "no-store");
 
@@ -51,10 +56,10 @@ export async function onRequestGet(context) {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) return json({ error: "unavailable" }, 502, "no-store");
+    if (!res.ok) return unavailable();
     teaser = await res.json();
   } catch {
-    return json({ error: "unavailable" }, 502, "no-store");
+    return unavailable();
   }
 
   const body = {

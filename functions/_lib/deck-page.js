@@ -170,11 +170,11 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=1">
+<link rel="stylesheet" href="/assets/deck.css?v=2">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
-${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=1" defer></script>` : `<script src="/assets/deck.js?v=1" defer></script>`}
+${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=2" defer></script>` : `<script src="/assets/deck.js?v=2" defer></script>`}
 </body>
 </html>`;
 }
