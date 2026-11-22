@@ -268,6 +268,20 @@ export async function fetchDeckByShortId(shortId) {
   return rows[0] ? withEmptyDeckInfo(rows[0]) : undefined;
 }
 
+/**
+ * Whether a code that found no visible deck belongs to one waiting for moderation (migration
+ * 0031). A yes or no and nothing about the deck. False on any failure, including a database
+ * without the function: the page then says "not found" as before.
+ */
+export async function isDeckUnderReview(shortId) {
+  try {
+    const res = await rpc("deck_code_under_review", { p_code: shortId.toUpperCase() });
+    return res.ok && (await res.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
 // Only avatars from the app's own public bucket are shown: the page's CSP allows that host, and a
 // stored URL pointing anywhere else is not something to put in front of visitors.
 const AVATAR_PREFIX = `${SUPABASE_URL}/storage/v1/object/public/avatars/`;

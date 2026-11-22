@@ -1,7 +1,7 @@
 // Shared request handling for the deck pages: host rules, edge caching, and the one function
 // that loads + renders a deck for either variant. No onRequest* export: a plain module.
 
-import { SITE_ORIGIN, fetchDeckByShortId, fetchDeckContent, fetchDeckAuthor, fetchDeckLearners } from "./community.js";
+import { SITE_ORIGIN, fetchDeckByShortId, isDeckUnderReview, fetchDeckContent, fetchDeckAuthor, fetchDeckLearners } from "./community.js";
 import { deckLang } from "./deck-i18n.js";
 import { deckSlug, sectionSlug } from "./slug.js";
 import { renderDeckPage, renderSectionPage, renderMessagePage, pageHeaders, deckPath } from "./deck-page.js";
@@ -73,6 +73,14 @@ export async function messageResponse(kind, url, lang = "uk") {
   });
 }
 
+/**
+ * The answer for a code with no visible deck: "in review" while its first check runs, otherwise
+ * "not found". Both 404, noindex and uncached, so the deck shows up as soon as it is approved.
+ */
+export async function missingDeckResponse(code, url) {
+  return messageResponse((await isDeckUnderReview(code)) ? "reviewing" : "notFound", url);
+}
+
 /** Canonical /decks path of a deck row. */
 export function canonicalDeckPath(folder) {
   return deckPath(folder.short_id, deckSlug(folder, deckLang(folder)));
@@ -91,7 +99,7 @@ export async function renderDeck({ code, url, variant, folder: preloaded }) {
       return messageResponse("unavailable", url);
     }
   }
-  if (!folder) return messageResponse("notFound", url);
+  if (!folder) return missingDeckResponse(code, url);
 
   const lang = deckLang(folder);
   let content;

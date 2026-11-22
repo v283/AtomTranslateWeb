@@ -14,7 +14,7 @@
 
 import { SITE_ORIGIN, fetchDeckByShortId } from "../_lib/community.js";
 import {
-  SHORT_ID_RE, isMainHost, cacheKeyFor, fromCache, toCache, messageResponse,
+  SHORT_ID_RE, isMainHost, cacheKeyFor, fromCache, toCache, messageResponse, missingDeckResponse,
   canonicalDeckPath, renderDeck, headFrom,
 } from "../_lib/deck-route.js";
 
@@ -30,7 +30,7 @@ export async function onRequestGet(context) {
     } catch {
       return messageResponse("unavailable", url);
     }
-    if (!folder) return messageResponse("notFound", url);
+    if (!folder) return missingDeckResponse(code, url);
     const target = url.hostname === "atomtranslate.com"
       ? `${SITE_ORIGIN}${canonicalDeckPath(folder)}`
       : `${url.origin}${canonicalDeckPath(folder)}?host=main`;

@@ -687,8 +687,9 @@ ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--p
 
 export function renderMessagePage({ lang, kind, url }) {
   const s = strings(lang);
-  const title = kind === "unavailable" ? s.unavailableTitle : s.notFoundTitle;
-  const body = kind === "unavailable" ? s.unavailableBody : s.notFoundBody;
+  const [title, body] = kind === "unavailable" ? [s.unavailableTitle, s.unavailableBody]
+    : kind === "reviewing" ? [s.reviewingTitle, s.reviewingBody]
+    : [s.notFoundTitle, s.notFoundBody];
   return documentShell({
     lang,
     title: `${title} — Atom Translate`,
