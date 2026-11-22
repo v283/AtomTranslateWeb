@@ -7,11 +7,12 @@
 // redirects here too: mobile.atomtranslate.com keeps only /community/{CODE} (the app link).
 //
 // Rendering is functions/_lib/deck-page.js (variant "main"); data, 404/503 and caching are
-// functions/_lib/deck-route.js. Private, deleted and unknown decks are 404 + noindex.
+// functions/_lib/deck-route.js. Private, deleted and unknown decks are 404 + noindex,
+// and so is a deck in review, with its own text.
 
 import { SITE_ORIGIN, fetchDeckByShortId } from "../../_lib/community.js";
 import {
-  SHORT_ID_RE, isMobileHost, cacheKeyFor, fromCache, toCache, messageResponse,
+  SHORT_ID_RE, isMobileHost, cacheKeyFor, fromCache, toCache, messageResponse, missingDeckResponse,
   canonicalDeckPath, renderDeck, renderSection, headFrom,
 } from "../../_lib/deck-route.js";
 import { sectionIdPart } from "../../_lib/slug.js";
@@ -32,7 +33,7 @@ export async function onRequestGet(context) {
   } catch {
     return messageResponse("unavailable", url);
   }
-  if (!folder) return messageResponse("notFound", url);
+  if (!folder) return missingDeckResponse(code, url);
 
   const parts = Array.isArray(context.params.slug) ? context.params.slug : [];
   if (parts.length >= 2) {
