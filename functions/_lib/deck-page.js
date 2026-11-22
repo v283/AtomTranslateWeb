@@ -6,12 +6,12 @@
 //     (this URL IS the app link).
 // Plus the /decks catalog shell and the 404/503 pages. No onRequest* export: a plain module.
 //
-// Everything a crawler needs is in the HTML: every word and translation, in <details> per
-// section, readable without JS. /assets/deck.js only adds the extras on top: theme switch,
-// mini-quiz, leaderboard teaser, Android app banner, sticky mobile CTA.
+// Everything a crawler needs is in the HTML: every word and translation, readable without JS.
+// /assets/deck.js only adds the extras on top: theme switch, mini-quiz, leaderboard teaser,
+// Android app banner, sticky mobile CTA, the word list's "show more" paging and pronunciation.
 
 import {
-  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, SUPABASE_URL, escapeHtml, breakableHtml,
+  PLAY_STORE_URL, APP_STORE_URL, SITE_ORIGIN, WEB_APP_ORIGIN, SUPABASE_URL, WORD_IMAGE_ORIGIN, escapeHtml, breakableHtml,
 } from "./community.js";
 import { sectionSlug } from "./slug.js";
 import {
@@ -52,7 +52,7 @@ function themeScriptHash() {
 export async function pageHeaders(extra = {}) {
   const hash = await themeScriptHash();
   return {
-    "Content-Security-Policy": `default-src 'self'; script-src 'self' ${hash} https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+    "Content-Security-Policy": `default-src 'self'; script-src 'self' ${hash} https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -189,11 +189,11 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=10">
+<link rel="stylesheet" href="/assets/deck.css?v=11">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
-${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=3" defer></script>` : `<script src="/assets/deck.js?v=3" defer></script>`}
+${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=4" defer></script>` : `<script src="/assets/deck.js?v=4" defer></script>`}
 </body>
 </html>`;
 }
@@ -356,12 +356,22 @@ function modesHtml(s, lang, scope, id, heading) {
   </section>`;
 }
 
-function wordsTableHtml(words, folder, s) {
+// The word list, as cards like the app's section screen: picture (when the word has one),
+// word, translation, and a pronounce button. Every word is in the HTML — crawlers and no-JS
+// visitors get the whole list; deck.js then shows WORDS_PAGE at a time behind a "show more"
+// button and reveals the pronounce buttons where the browser can speak.
+const WORDS_PAGE = 60;
+
+function wordListHtml(words, folder, s) {
   const code = LANGUAGE_CODES[folder.language] || "";
-  return `<table class="words">
-          <thead class="sr-only"><tr><th scope="col">${escapeHtml(s.original)}</th><th scope="col">${escapeHtml(s.translation)}</th></tr></thead>
-          <tbody>${words.map((w) => `<tr><td${code ? ` lang="${escapeHtml(code)}"` : ""}>${escapeHtml(w.original)}</td><td>${escapeHtml(w.translation)}</td></tr>`).join("")}</tbody>
-        </table>`;
+  const langAttr = code ? ` lang="${escapeHtml(code)}"` : "";
+  const items = words.map((w) => `<li class="wcard">${w.imageUrl
+    ? `<img class="wcard__img" src="${escapeHtml(w.imageUrl)}" alt="" width="56" height="56" loading="lazy" decoding="async">`
+    : ""}<span class="wcard__text"><span class="wcard__orig"${langAttr}>${escapeHtml(w.original)}</span><span class="wcard__tr">${escapeHtml(w.translation)}</span></span><button type="button" class="wcard__speak" data-speak hidden aria-label="${escapeHtml(fmt(s.pronounce, w.original))}"><img src="/assets/icons/speaker.png" width="20" height="20" alt=""></button></li>`).join("");
+  const more = words.length > WORDS_PAGE
+    ? `<button type="button" class="btn words-more" data-words-more hidden data-label="${escapeHtml(s.showMoreWords)}"></button>`
+    : "";
+  return `<ul class="wcards" data-words data-page="${WORDS_PAGE}" data-lang="${escapeHtml(code)}">${items}</ul>${more}`;
 }
 
 function quizPanelHtml(s) {
@@ -480,7 +490,7 @@ export function renderDeckPage({ variant, folder, sections, author, learners, la
   const shown = deckShownWords(sections);
   const shownWordsHtml = shown.words.length ? `<section class="panel words-panel" aria-labelledby="words-title">
     <h2 id="words-title">${escapeHtml(shown.complete ? s.wordsTitle : s.sampleWordsTitle)}${shown.complete ? ` <span class="all-words__count">${escapeHtml(String(shown.words.length))}</span>` : ""}</h2>
-    ${wordsTableHtml(shown.words, folder, s)}
+    ${wordListHtml(shown.words, folder, s)}
     ${shown.complete ? "" : `<p class="words-panel__hint">${escapeHtml(s.sampleWordsHint)}</p>`}
   </section>` : "";
 
@@ -611,7 +621,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
 
   <section class="panel words-panel" aria-labelledby="words-title">
     <h2 id="words-title">${escapeHtml(s.wordsTitle)} <span class="all-words__count">${escapeHtml(String(count))}</span></h2>
-    ${wordsTableHtml(section.words, folder, s)}
+    ${wordListHtml(section.words, folder, s)}
   </section>
 
   <nav class="sec-nav" aria-label="${escapeHtml(s.sectionsHeading)}">
