@@ -21,8 +21,13 @@ export const WEB_APP_ORIGIN = "https://app.atomtranslate.com";
 // type="application/ld+json", which is data and never executed. style-src needs 'unsafe-inline'
 // for the page's <style> block — that grants no script execution. img-src allows Supabase for
 // the signed word thumbnails loaded by the accordion.
+// Where AtomTranslateApi serves word pictures from (words.image_url, the public "term-images"
+// bucket behind the self-hosted Storage). Legacy pictures (image_path) are signed URLs on
+// SUPABASE_URL instead.
+export const WORD_IMAGE_ORIGIN = "https://supa.atomtranslate.com";
+
 export const PAGE_SECURITY_HEADERS = {
-  "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+  "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -160,19 +165,25 @@ export async function fetchPublicFolderIndex(max = 5000) {
 export async function fetchWordsForSection(sectionId) {
   const query = new URLSearchParams({
     section_id: `eq.${sectionId}`,
-    select: "original,translation,image_path",
+    select: "original,translation,image_url,image_path",
     order: "created_at.asc",
   });
   const res = await fetch(`${SUPABASE_URL}/rest/v1/words?${query}`, { headers: supabaseHeaders() });
   const words = res.ok ? await res.json() : [];
+  return withImageUrls(words);
+}
 
-  const paths = [...new Set(words.map((w) => w.image_path).filter(Boolean))];
-  const signedUrls = paths.length ? await createSignedImageUrls(paths) : new Map();
-
-  return words.map((w) => ({
-    original: w.original,
-    translation: w.translation,
-    imageUrl: w.image_path ? signedUrls.get(w.image_path) || null : null,
+/**
+ * `{ original, translation, imageUrl }` for each row. A picture from the API pipeline already
+ * has a public URL (image_url); only a legacy one (image_path, private bucket) is signed — one
+ * batched request for all of them. Extra fields on the rows (section_id) are kept.
+ */
+async function withImageUrls(rows) {
+  const legacy = [...new Set(rows.filter((w) => !w.image_url && w.image_path).map((w) => w.image_path))];
+  const signedUrls = legacy.length ? await createSignedImageUrls(legacy).catch(() => new Map()) : new Map();
+  return rows.map(({ image_url, image_path, ...rest }) => ({
+    ...rest,
+    imageUrl: image_url || (image_path ? signedUrls.get(image_path) || null : null),
   }));
 }
 
@@ -289,7 +300,8 @@ export async function fetchDeckAuthor(folder) {
 
 /**
  * Public sections of the deck in app order, each with its real `wordCount` (one request, an
- * embedded count) and `words` (text only) for the sections whose words were loaded:
+ * embedded count) and `words` ({ original, translation, imageUrl }) for the sections whose words
+ * were loaded:
  *  - `pickSection` given (a section page): called with the sections, every word of the one it
  *    returns (none if it returns nothing), no other words;
  *  - otherwise (the deck page): a DECK_SAMPLE_WORDS sample (demo quiz, sample words), one query —
@@ -339,14 +351,16 @@ export async function fetchDeckContent(folderId, { pickSection } = {}) {
     const res = await restGet("words", {
       section_id: filter,
       deleted_at: "is.null",
-      select: "section_id,original,translation",
+      select: "section_id,original,translation,image_url,image_path",
       order: "created_at.asc,id.asc",
       limit: String(limit),
       offset: String(offset),
     });
     if (!res.ok) throw new Error(`words lookup failed: ${res.status}`);
     const page = await res.json();
-    for (const w of page) byId.get(w.section_id)?.words.push({ original: w.original, translation: w.translation });
+    for (const w of await withImageUrls(page)) {
+      byId.get(w.section_id)?.words.push({ original: w.original, translation: w.translation, imageUrl: w.imageUrl });
+    }
     fetched += page.length;
     if (page.length < limit) break;
   }

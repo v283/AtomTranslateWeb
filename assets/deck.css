@@ -312,11 +312,28 @@ a { color: var(--accent-text); }
 }
 .btn--train:hover { border-color: var(--accent); }
 
-.words { width: 100%; border-collapse: collapse; font-size: 15px; }
-.words td { padding: 9px 0; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
-.words tr:last-child td { border-bottom: none; }
-.words td:first-child { font-weight: 600; padding-right: 12px; width: 50%; }
-.words td:last-child { color: var(--text-muted); text-align: right; }
+/* Word list: cards like the app's section screen — picture, word, translation, pronounce. */
+.wcards { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.wcard {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+}
+.wcard[hidden] { display: none; }
+.wcard__img {
+  width: 56px; height: 56px; flex-shrink: 0; object-fit: cover;
+  border-radius: 10px; background: var(--surface-alt);
+}
+.wcard__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.wcard__orig { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.wcard__tr { font-size: 14px; color: var(--text-muted); overflow-wrap: anywhere; }
+.wcard__speak {
+  flex-shrink: 0; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 10px; background: var(--surface-alt); cursor: pointer;
+}
+.wcard__speak[hidden] { display: none; }
+.wcard__speak:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.words-more { width: 100%; margin-top: 12px; background: var(--surface-alt); color: var(--text); font-size: 15px; }
+.words-more[hidden] { display: none; }
 
 /* ------------------------------------------------------------------ Android banner, sticky CTA */
 

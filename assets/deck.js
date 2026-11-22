@@ -4,7 +4,8 @@
 //   * the mini-quiz (3–5 questions from the deck, on the page),
 //   * the leaderboard teaser (fetched from /api/decks/{CODE}/leaderboard),
 //   * the small Android "open in the app" banner (dismissible, remembered),
-//   * the sticky "Learn these words" bar on phones once the main button has scrolled away.
+//   * the sticky "Learn these words" bar on phones once the main button has scrolled away,
+//   * the word list's paging ("show more", a page at a time) and pronounce buttons.
 // No popups or interstitials: nothing here covers the content.
 (function () {
   "use strict";
@@ -270,6 +271,49 @@
       .catch(function () { /* the teaser is optional */ });
   }
 
+  /* ---------------------------------------------------------------- word list */
+
+  // The server sends every word (crawlers and no-JS visitors read them all). Here only the first
+  // page is left showing — a long section then costs a short page to lay out, and its lazy
+  // pictures load only as their rows come into view — with a button for the next page.
+  function initWords() {
+    var canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
+    Array.prototype.forEach.call(document.querySelectorAll("[data-words]"), function (list) {
+      var page = Number(list.getAttribute("data-page")) || 60;
+      var lang = list.getAttribute("data-lang") || "";
+      var rows = list.querySelectorAll(".wcard");
+      var shown = 0;
+      var more = list.nextElementSibling && list.nextElementSibling.hasAttribute("data-words-more")
+        ? list.nextElementSibling : null;
+
+      function showNext() {
+        var until = Math.min(rows.length, shown + page);
+        for (var i = 0; i < rows.length; i++) rows[i].hidden = i >= until;
+        shown = until;
+        if (!more) return;
+        var left = rows.length - shown;
+        more.hidden = left <= 0;
+        more.textContent = fmt(more.getAttribute("data-label"), Math.min(page, left));
+      }
+
+      if (more) more.addEventListener("click", showNext);
+      showNext();
+
+      if (!canSpeak) return;
+      Array.prototype.forEach.call(list.querySelectorAll("[data-speak]"), function (b) { b.hidden = false; });
+      list.addEventListener("click", function (event) {
+        var button = event.target.closest && event.target.closest("[data-speak]");
+        if (!button) return;
+        var word = button.parentNode.querySelector(".wcard__orig");
+        if (!word) return;
+        var utterance = new SpeechSynthesisUtterance(word.textContent || "");
+        if (lang) utterance.lang = lang;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      });
+    });
+  }
+
   /* ---------------------------------------------------------------- sticky CTA */
 
   function initSticky() {
@@ -291,4 +335,5 @@
   initQuiz();
   initBoard();
   initSticky();
+  initWords();
 })();
