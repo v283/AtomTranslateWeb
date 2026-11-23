@@ -62,6 +62,31 @@
     });
   }
 
+  /* ---------------------------------------------------------------- catalog filters */
+
+  // The /decks form: a changed filter applies at once (the button stays for the query and for
+  // visitors without JS). Back from a deck page restores the selects from the bfcache as left.
+  function initFilters() {
+    var form = document.querySelector("form.filters");
+    if (!form) return;
+    // Empty fields stay out of the URL, as in the links the server renders.
+    function dropEmpty() {
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (el.name && !el.value) el.disabled = true;
+      });
+    }
+    form.addEventListener("submit", dropEmpty);
+    Array.prototype.forEach.call(form.querySelectorAll("select"), function (select) {
+      select.addEventListener("change", function () {
+        dropEmpty();
+        form.submit();
+      });
+    });
+    window.addEventListener("pageshow", function () {
+      Array.prototype.forEach.call(form.elements, function (el) { el.disabled = false; });
+    });
+  }
+
   var data = null;
   var node = document.getElementById("deck-data");
   if (node) {
@@ -69,6 +94,7 @@
   }
 
   initTheme();
+  initFilters();
   if (!data) return;
   var s = data.s;
 

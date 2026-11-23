@@ -52,7 +52,7 @@ function themeScriptHash() {
 export async function pageHeaders(extra = {}) {
   const hash = await themeScriptHash();
   return {
-    "Content-Security-Policy": `default-src 'self'; script-src 'self' ${hash} https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+    "Content-Security-Policy": `default-src 'self'; script-src 'self' ${hash} https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -68,7 +68,7 @@ function safeJson(value) {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function truncate(text, max) {
+export function truncate(text, max) {
   const clean = String(text ?? "").replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max - 1);
@@ -79,6 +79,7 @@ function truncate(text, max) {
 /* ------------------------------------------------------------------------------- icons */
 
 const ICONS = {
+  search: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></g></svg>`,
   play: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>`,
   sun: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></g></svg>`,
   moon: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.7 14.6A8.6 8.6 0 0 1 9.4 3.3a.8.8 0 0 0-1-1A10 10 0 1 0 21.7 15.6a.8.8 0 0 0-1-1Z"/></svg>`,
@@ -100,10 +101,10 @@ const ICONS = {
  * On phones the store links live in the footer; the iOS Smart App Banner and the Android bar
  * handle "open in the app" there.
  */
-function headerHtml(s, { homeHref, webLink }) {
+function headerHtml(s, { homeHref, webLink, wide = false }) {
   const web = webLink || `${WEB_APP_ORIGIN}/community`;
   return `
-<header class="top">
+<header class="top${wide ? " top--wide" : ""}">
   <a class="brand" href="${escapeHtml(homeHref)}">
     <img src="/apple-touch-icon.png" width="32" height="32" alt="">
     <span>Atom Translate</span>
@@ -120,10 +121,10 @@ function headerHtml(s, { homeHref, webLink }) {
 </header>`;
 }
 
-function footerHtml(s, lang) {
+function footerHtml(s, lang, { wide = false } = {}) {
   const home = lang === "uk" ? "/uk/" : "/";
   return `
-<footer class="foot">
+<footer class="foot${wide ? " foot--wide" : ""}">
   <div class="foot__stores">${storeBadgesHtml(s)}</div>
   <nav aria-label="Atom Translate">
     <a href="/decks">${escapeHtml(s.allDecks)}</a>
@@ -189,11 +190,14 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta name="twitter:image" content="${SITE_ORIGIN}/og-image.png?v=2">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/deck.css?v=11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/deck.css?v=12">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
-${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=4" defer></script>` : `<script src="/assets/deck.js?v=4" defer></script>`}
+${pageData ? `<script type="application/json" id="deck-data">${safeJson(pageData)}</script>\n<script src="/assets/deck.js?v=5" defer></script>` : `<script src="/assets/deck.js?v=5" defer></script>`}
 </body>
 </html>`;
 }

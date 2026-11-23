@@ -80,7 +80,7 @@
 .ad-cap-item b { display: block; font-family: var(--font-display, "Space Grotesk", sans-serif); font-weight: 600; font-size: 1.05rem; color: var(--text, #f0f0ec); letter-spacing: -0.005em; }
 .ad-cap-item span { display: block; font-size: 0.85rem; color: var(--text-muted, #a8a79e); margin-top: 2px; }
 .ad-dots { display: flex; justify-content: center; gap: 4px; position: absolute; left: 0; right: 0; bottom: 0; }
-.ad-dot { flex: 1 1 0; max-width: 26px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.16); overflow: hidden; border: 0; padding: 0; cursor: pointer; }
+.ad-dot { flex: 1 1 0; max-width: 26px; height: 6px; border-radius: 3px; background: var(--dot-track, rgba(255, 255, 255, 0.16)); overflow: hidden; border: 0; padding: 0; cursor: pointer; }
 .ad-dot i { display: block; height: 100%; width: 100%; background: var(--accent, #378add); transform-origin: 0 50%; transform: scaleX(0); }
 .ad-dot:focus-visible { outline: 2px solid var(--accent, #378add); outline-offset: 3px; }
 

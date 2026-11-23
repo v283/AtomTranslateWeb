@@ -102,6 +102,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="assets/theme.js"></script>
 </head>
 <body>
 
@@ -121,6 +122,10 @@
       <a href="report.html">Report a bug</a>
     </nav>
     <div class="header-actions">
+      <button class="theme-toggle" type="button" hidden data-theme-toggle data-label-light="Switch to light theme" data-label-dark="Switch to dark theme" aria-label="Switch theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.7 14.6A8.6 8.6 0 0 1 9.4 3.3a.8.8 0 0 0-1-1A10 10 0 1 0 21.7 15.6a.8.8 0 0 0-1-1Z"/></svg>
+      </button>
       <a class="btn btn-ghost" href="index.html">Back home</a>
     </div>
   </div>
@@ -188,7 +193,7 @@
 <p>Go to <strong>Settings → Data</strong> and tap <strong>Export to CSV</strong> to save all your words to a file you can back up or open in a spreadsheet. Use <strong>Import from CSV</strong> on the same screen to bring words back in, using the same column format as the exported file.</p>
 
 <h3>Can I import a set I made on Quizlet?</h3>
-<p>Yes. Save your Quizlet set as a PDF (Quizlet's Print option, keeping the Table layout), then in Atom Translate open the folder you want to import into and tap <strong>⋯ → Import from Quizlet</strong> to pull the words in automatically. This works both in the <a href="https://app.atomtranslate.com/">web app</a> (beta) and in the phone app, so a PDF made on a computer never has to reach your phone. See the full walkthrough in our <a href="tutorial-quizlet-import.html">Quizlet import tutorial</a>.</p>
+<p>Yes. Save your Quizlet set as a PDF (Quizlet's Print option, keeping the Table layout), then in Atom Translate open the folder you want to import into and tap <strong>⋯ → Import from Quizlet</strong> to pull the words in automatically. This works both in the <a href="https://app.atomtranslate.com/">web app</a> and in the phone app, so a PDF made on a computer never has to reach your phone. See the full walkthrough in our <a href="tutorial-quizlet-import.html">Quizlet import tutorial</a>.</p>
 
 <h3>How do I delete my account and all associated data?</h3>
 <p>Email <a href="mailto:gandribidav@gmail.com">gandribidav@gmail.com</a> from the address associated with your account and request account deletion. We'll delete or anonymize your account and associated data within a reasonable timeframe, up to 30 days. Locally stored data on your device is removed when you uninstall the app.</p>

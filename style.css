@@ -1,17 +1,24 @@
 /* Atom Translate — shared design system
-   Matches the app's Dark theme (TranslateLearn/Resources/Theme/DarkTheme.xaml)
+   Two themes, the app's own: dark matches DarkTheme.xaml, light matches LightTheme.xaml
+   (the same values as assets/deck.css). assets/theme.js sets data-theme on <html> before first
+   paint from the saved choice or the system setting; without JS the dark theme applies.
    Space Grotesk / Inter / IBM Plex Mono */
 
-:root {
+:root,
+[data-theme="dark"] {
   --bg: #121316;
   --bg-elevated: #1c1d22;
   --bg-card: #1c1d22;
+  --bg-chip: #26272d;
   --border: rgba(255, 255, 255, 0.10);
   --border-strong: #33353b;
   --text: #f0f0ec;
   --text-muted: #a8a79e;
   --text-faint: #7c7a70;
   --accent: #378add;
+  --accent-hover: #5ba3e8;
+  /* Accent as small text: in the dark theme the accent itself reads fine. */
+  --accent-text: #378add;
   --accent-dim: #185fa5;
   --accent-soft: #1b3349;
   --accent-soft-strong: rgba(55, 138, 221, 0.35);
@@ -20,6 +27,51 @@
   --danger-text: #e8837d;
   --success: #5dcaa5;
   --success-tint: #223019;
+  --header-bg: rgba(18, 19, 22, 0.78);
+  --glow-strong: rgba(55, 138, 221, 0.16);
+  --glow-soft: rgba(55, 138, 221, 0.08);
+  --band-tint: rgba(255, 255, 255, 0.015);
+  --shot-shadow: rgba(0, 0, 0, 0.5);
+  --dot-track: rgba(255, 255, 255, 0.16);
+  --shadow-card: 0 24px 48px -32px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f8f9fb;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-chip: #eef0f3;
+  --border: rgba(44, 44, 42, 0.10);
+  --border-strong: #dcdee2;
+  --text: #2c2c2a;
+  /* TextSecondary (#888780) is too faint for small text on white (WCAG AA); mixed with
+     TextPrimary, as in deck.css. */
+  --text-muted: color-mix(in srgb, #2c2c2a 72%, #888780);
+  --text-faint: color-mix(in srgb, #2c2c2a 40%, #888780);
+  --accent: #378add;
+  --accent-hover: #2a78c6;
+  /* #378add on white is 3.4:1 — enough for headings and icons, not for small text. */
+  --accent-text: #185fa5;
+  --accent-dim: #185fa5;
+  --accent-soft: #ebf4fd;
+  --accent-soft-strong: rgba(55, 138, 221, 0.30);
+  --danger: #f09595;
+  --danger-tint: #fcebeb;
+  --danger-text: #a32d2d;
+  --success: #27500a;
+  --success-tint: #eaf3de;
+  --header-bg: rgba(248, 249, 251, 0.82);
+  --glow-strong: rgba(55, 138, 221, 0.12);
+  --glow-soft: rgba(55, 138, 221, 0.06);
+  --band-tint: rgba(44, 44, 42, 0.025);
+  --shot-shadow: rgba(44, 44, 42, 0.22);
+  --dot-track: rgba(44, 44, 42, 0.14);
+  --shadow-card: 0 18px 40px -30px rgba(44, 44, 42, 0.35);
+  color-scheme: light;
+}
+
+:root {
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
@@ -27,7 +79,6 @@
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --container: 1120px;
-  --shadow-card: 0 24px 48px -32px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -53,8 +104,8 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 82% -10%, rgba(55, 138, 221, 0.16), transparent 60%),
-    radial-gradient(45% 40% at 8% 0%, rgba(55, 138, 221, 0.08), transparent 60%);
+    radial-gradient(60% 50% at 82% -10%, var(--glow-strong), transparent 60%),
+    radial-gradient(45% 40% at 8% 0%, var(--glow-soft), transparent 60%);
   pointer-events: none;
 }
 
@@ -100,7 +151,7 @@ ul {
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .eyebrow::before {
@@ -142,7 +193,7 @@ ul {
 }
 
 .btn-primary:hover {
-  background: #5ba3e8;
+  background: var(--accent-hover);
   box-shadow: 0 14px 28px -8px rgba(55, 138, 221, 0.65);
 }
 
@@ -154,7 +205,7 @@ ul {
 
 .btn-ghost:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .btn-store {
@@ -200,6 +251,62 @@ ul {
   color: var(--accent);
 }
 
+/* Official store badges (assets/badges/, the same files as the web app's public/badges/):
+   drawn as published — no recolouring, no stretching, only the height is set. Apple's badge
+   goes first in a lineup and stays at least 40px tall. Their own grey outline keeps them
+   visible on both themes. */
+.store-badge {
+  display: inline-flex;
+  flex: none;
+  border-radius: 9px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.store-badge img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+
+.store-badge:hover {
+  opacity: 0.85;
+}
+
+.store-badge:active {
+  transform: translateY(1px);
+}
+
+.store-badge:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* "Open web app" next to the badges: same height, so the row lines up. */
+.hero-ctas,
+.cta-actions {
+  align-items: center;
+}
+
+.hero-ctas .btn-store.is-web,
+.cta-actions .btn-store.is-web {
+  height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Phones: both badges on one line (the Ukrainian pair is the widest). */
+@media (max-width: 640px) {
+  .store-badge img {
+    height: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .store-badge img {
+    height: 40px;
+  }
+}
+
 .btn-store svg {
   width: 22px;
   height: 22px;
@@ -226,34 +333,6 @@ ul {
   font-size: 0.92rem;
   color: var(--text-muted);
   font-weight: 600;
-}
-
-/* Beta marker for the web app — the browser build is not at parity with the mobile apps yet,
-   so every entry point to it carries this pill. */
-.beta-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--accent-soft-strong);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.4;
-}
-
-.btn-store .beta-tag {
-  margin-left: 2px;
-  align-self: center;
-}
-
-.site-nav a .beta-tag {
-  margin-left: 4px;
-  vertical-align: middle;
 }
 
 /* ---------- Logo mark ---------- */
@@ -293,7 +372,7 @@ ul {
   top: 0;
   z-index: 40;
   border-bottom: 1px solid var(--border);
-  background: rgba(18, 19, 22, 0.78);
+  background: var(--header-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -392,7 +471,7 @@ ul {
 }
 
 .hero-note a {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -438,7 +517,7 @@ ul {
 .hero-shot {
   width: min(100%, 300px);
   height: auto;
-  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 30px 50px var(--shot-shadow));
 }
 
 /* ---------- Screenshot gallery ---------- */
@@ -464,7 +543,7 @@ ul {
   height: auto;
   border-radius: 28px;
   margin-bottom: 18px;
-  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 16px 32px var(--shot-shadow));
 }
 
 .shot-item h3 {
@@ -499,7 +578,7 @@ ul {
 }
 
 .section-alt {
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.015) 12%, rgba(255, 255, 255, 0.015) 88%, transparent);
+  background: linear-gradient(180deg, transparent, var(--band-tint) 12%, var(--band-tint) 88%, transparent);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -569,7 +648,7 @@ ul {
 
 .mode-item .mode-index {
   font-family: var(--font-mono);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 0.78rem;
   display: block;
   margin-bottom: 10px;
@@ -609,6 +688,191 @@ ul {
 .mode-callout p {
   color: var(--text-muted);
   font-size: 0.92rem;
+}
+
+/* ---------- Public decks (#decks on the landing pages) ---------- */
+
+/* A GET form straight to the /decks catalog (functions/decks/index.js reads ?q=, ?language=,
+   ?level=, ?category=), so it works without JS and the catalog does the searching. */
+.decks-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 40px;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  padding: 44px;
+}
+
+.decks-band h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin: 14px 0 12px;
+}
+
+.decks-band p {
+  color: var(--text-muted);
+  max-width: 46ch;
+}
+
+.decks-points {
+  list-style: none;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.decks-points li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.decks-points svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+}
+
+.deck-search {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.deck-search__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.deck-search__row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.deck-search__row > svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.deck-search__row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 10px 0;
+}
+
+.deck-search__row input::placeholder {
+  color: var(--text-faint);
+}
+
+.deck-search__row .btn {
+  padding: 11px 20px;
+}
+
+.deck-search__label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.deck-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.deck-chips a {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-chip);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.deck-chips a:hover {
+  color: var(--accent-text);
+  border-color: var(--accent-soft-strong);
+}
+
+.deck-search__all {
+  align-self: flex-start;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.deck-search__all:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .decks-band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .decks-band {
+    padding: 28px 20px;
+  }
+
+  .deck-search__row {
+    padding-left: 12px;
+  }
+
+  .deck-search__row .btn {
+    padding: 11px 14px;
+  }
+}
+
+@media (max-width: 400px) {
+  .deck-search__row > svg {
+    display: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---------- Short videos (uk/index.html #videos) ---------- */
@@ -814,7 +1078,7 @@ ul {
 }
 
 .footer-col a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .footer-bottom {
@@ -983,7 +1247,7 @@ ul {
 }
 
 .report-side .side-card a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 
@@ -1044,7 +1308,7 @@ ul {
 }
 
 .legal-wrap a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .legal-wrap table {
@@ -1120,7 +1384,7 @@ ul {
 }
 
 .tutorial-toc a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--accent-soft-strong);
 }
 
@@ -1139,7 +1403,7 @@ ul {
   border-radius: 50%;
   background: var(--accent-soft);
   border: 1px solid var(--accent-soft-strong);
-  color: var(--accent);
+  color: var(--accent-text);
   font-family: var(--font-mono);
   font-size: 0.92rem;
   display: flex;
@@ -1410,6 +1674,67 @@ ul {
   }
 }
 
+/* ---------- Theme switch ---------- */
+
+/* Shown by assets/theme.js; without JS the page keeps the dark theme and no dead button. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle[hidden] {
+  display: none;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The icon shows the theme a click switches to. */
+[data-theme="dark"] .theme-toggle .icon-moon,
+[data-theme="light"] .theme-toggle .icon-sun,
+:root:not([data-theme]) .theme-toggle .icon-moon {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .theme-toggle {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* Below 360px (iPhone SE 1st gen and the like) the theme switch, language switch and install
+   button leave no room for the wordmark: the app icon alone stands for it (its alt carries the name). */
+@media (max-width: 359px) {
+  .site-header .logo {
+    font-size: 0;
+    gap: 0;
+  }
+}
+
 /* ---------- Language switcher ---------- */
 
 .lang-switch {
@@ -1438,7 +1763,7 @@ ul {
 
 .lang-switch a.is-active {
   color: var(--text);
-  background: var(--bg-elevated);
+  background: var(--bg-chip);
   font-weight: 600;
 }
 
@@ -1486,7 +1811,7 @@ ul {
 }
 
 .compare-table td.col-us {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 

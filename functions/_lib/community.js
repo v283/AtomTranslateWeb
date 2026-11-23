@@ -1,6 +1,5 @@
-// Shared helpers for the Community deep-link landing page (functions/community/[id].js), its
-// lazy-load JSON endpoint (functions/api/community/[shortId]/sections/[sectionId].js) and the
-// sitemap (functions/sitemap.xml.js). No onRequest* export here, so Cloudflare Pages doesn't
+// Shared Supabase helpers for the deck pages (/decks/…, functions/community/[id].js), the /decks
+// catalog and the sitemap (functions/sitemap.xml.js). No onRequest* export here, so Cloudflare Pages doesn't
 // register this file as a route — it's a plain module they import.
 
 export const SUPABASE_URL = "https://gfuhaoanbgnvkqozrhxs.supabase.co";
@@ -17,7 +16,7 @@ export const WEB_APP_ORIGIN = "https://app.atomtranslate.com";
 
 // Security headers for HTML rendered by Functions. Cloudflare Pages does NOT apply _headers to
 // Function responses, so these mirror the site-wide rules there and must be kept in sync.
-// script-src 'self' only: the page's own JS lives in /assets/community.js; the JSON-LD block is
+// script-src 'self' only: the page's own JS lives in /assets/; the JSON-LD block is
 // type="application/ld+json", which is data and never executed. style-src needs 'unsafe-inline'
 // for the page's <style> block — that grants no script execution. img-src allows Supabase for
 // the signed word thumbnails loaded by the accordion.
@@ -27,7 +26,7 @@ export const WEB_APP_ORIGIN = "https://app.atomtranslate.com";
 export const WORD_IMAGE_ORIGIN = "https://supa.atomtranslate.com";
 
 export const PAGE_SECURITY_HEADERS = {
-  "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
+  "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: ${SUPABASE_URL} ${WORD_IMAGE_ORIGIN}; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`,
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -52,69 +51,6 @@ export function escapeHtml(value) {
  */
 export function breakableHtml(value) {
   return escapeHtml(value).replace(/([_\-./])(?=.)/g, "$1<wbr>");
-}
-
-export function wordCountLabel(count) {
-  return count === 1 ? "1 word" : `${count} words`;
-}
-
-// Resolves to the folder row, or undefined when no public folder has this short id. Throws on an
-// upstream failure so the page can answer 503 (retry later) instead of a 404 that would tell
-// crawlers the deck is gone.
-export async function fetchFolderByShortId(shortId) {
-  const query = new URLSearchParams({
-    short_id: `eq.${shortId.toUpperCase()}`,
-    is_public: "eq.true",
-    select: "id,name,short_id,category,level,language,native_language,author_name,word_count,section_count,updated_at",
-  });
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/folders?${query}`, { headers: supabaseHeaders() });
-  if (!res.ok) throw new Error(`folders lookup failed: ${res.status}`);
-  const rows = await res.json();
-  return rows[0];
-}
-
-// Section list + a per-section word count, in two cheap requests (id/name only, then just the
-// section_id column of every word) — deliberately not the words themselves, so a page load never
-// pulls the actual deck content; that only happens once a section is expanded client-side.
-export async function fetchSectionsWithCounts(folderId) {
-  const sectionsQuery = new URLSearchParams({
-    folder_id: `eq.${folderId}`,
-    is_public: "eq.true",
-    select: "id,name",
-    order: "created_at.asc",
-  });
-  const sectionsRes = await fetch(`${SUPABASE_URL}/rest/v1/sections?${sectionsQuery}`, { headers: supabaseHeaders() });
-  const sections = sectionsRes.ok ? await sectionsRes.json() : [];
-  if (sections.length === 0) return [];
-
-  const idsList = sections.map((s) => s.id).join(",");
-  const wordsQuery = new URLSearchParams({
-    section_id: `in.(${idsList})`,
-    select: "section_id",
-  });
-  const wordsRes = await fetch(`${SUPABASE_URL}/rest/v1/words?${wordsQuery}`, { headers: supabaseHeaders() });
-  const wordRows = wordsRes.ok ? await wordsRes.json() : [];
-
-  const counts = new Map();
-  for (const w of wordRows) counts.set(w.section_id, (counts.get(w.section_id) || 0) + 1);
-
-  return sections.map((s) => ({ id: s.id, name: s.name, wordCount: counts.get(s.id) || 0 }));
-}
-
-// Server-rendered preview for crawlers and no-JS visitors: the first `limit` words of one section,
-// text only. Deliberately no image URLs — signed URLs expire after an hour, and the page HTML is
-// cacheable, so an embedded one could outlive its signature. The full list (with thumbnails) is
-// still lazy-loaded client-side through /api/community/{short_id}/sections/{sectionId}.
-export async function fetchWordPreview(sectionId, limit = 20) {
-  const query = new URLSearchParams({
-    section_id: `eq.${sectionId}`,
-    select: "original,translation",
-    order: "created_at.asc",
-    limit: String(limit),
-  });
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/words?${query}`, { headers: supabaseHeaders() });
-  if (!res.ok) return [];
-  return res.json();
 }
 
 // Public deck index for functions/sitemap.xml.js: short_id + updated_at of up to `max` public,
@@ -160,17 +96,6 @@ export async function fetchPublicFolderIndex(max = 5000) {
     if (page.length < limit) break;
   }
   return { rows, complete };
-}
-
-export async function fetchWordsForSection(sectionId) {
-  const query = new URLSearchParams({
-    section_id: `eq.${sectionId}`,
-    select: "original,translation,image_url,image_path",
-    order: "created_at.asc",
-  });
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/words?${query}`, { headers: supabaseHeaders() });
-  const words = res.ok ? await res.json() : [];
-  return withImageUrls(words);
 }
 
 /**
@@ -408,13 +333,14 @@ export async function searchDecks({ search, language, nativeLanguage, category, 
     p_grade: null,
     p_min_words: minWords,
   };
-  const [listRes, countRes] = await Promise.all([
-    rpc("search_public_folders", { ...args, p_sort: "downloads", p_limit: limit, p_offset: offset }),
-    rpc("count_public_folders", args),
-  ]);
+  const listRes = await rpc("search_public_folders", { ...args, p_sort: "downloads", p_limit: limit, p_offset: offset });
   if (await isSchemaMismatch(listRes)) return searchDecksFallback({ search, language, nativeLanguage, category, level, minWords, limit, offset });
   if (!listRes.ok) throw new Error(`deck search failed: ${listRes.status}`);
   const rows = (await listRes.json()).map(withEmptyDeckInfo);
+  // A page that isn't full is the last one, so it already knows the total: the count query (a
+  // second pass over the same search) runs only when there may be more pages after this one.
+  if (rows.length < limit) return { rows, total: offset + rows.length };
+  const countRes = await rpc("count_public_folders", args);
   const total = countRes.ok ? Number(await countRes.json()) : rows.length + offset;
   return { rows, total: Number.isFinite(total) ? total : rows.length + offset };
 }
