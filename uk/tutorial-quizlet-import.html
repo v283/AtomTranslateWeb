@@ -63,6 +63,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
+<script src="../assets/theme.js"></script>
 </head>
 <body>
 
@@ -81,6 +82,10 @@
       <a href="/report.html">Повідомити про помилку</a>
     </nav>
     <div class="header-actions">
+      <button class="theme-toggle" type="button" hidden data-theme-toggle data-label-light="Увімкнути світлу тему" data-label-dark="Увімкнути темну тему" aria-label="Змінити тему">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.7 14.6A8.6 8.6 0 0 1 9.4 3.3a.8.8 0 0 0-1-1A10 10 0 1 0 21.7 15.6a.8.8 0 0 0-1-1Z"/></svg>
+      </button>
       <nav class="lang-switch" aria-label="Мова">
         <a href="/tutorial-quizlet-import.html" hreflang="en" lang="en">EN</a>
         <a href="/uk/tutorial-quizlet-import.html" class="is-active" hreflang="uk" lang="uk">УК</a>
@@ -98,7 +103,7 @@
 
 <p>Експорт у текст/CSV у Quizlet платний. Безкоштовний обхідний шлях — власна функція Quizlet <strong>Print</strong>, яка перетворює будь-який набір на PDF. Atom Translate читає цей PDF і сам витягує з нього терміни та переклади.</p>
 
-<p>Імпорт працює і у <strong>веб-версії</strong> на <a href="https://app.atomtranslate.com/">app.atomtranslate.com</a> (зараз у беті), і в <strong>застосунку Atom Translate</strong> на Android та iOS. Кроки однакові.</p>
+<p>Імпорт працює і у <strong>веб-версії</strong> на <a href="https://app.atomtranslate.com/">app.atomtranslate.com</a>, і в <strong>застосунку Atom Translate</strong> на Android та iOS. Кроки однакові.</p>
 
 <div class="note">
   <strong>Коротко:</strong>
@@ -186,7 +191,6 @@
   <h2>Імпортуйте PDF у веб-версії</h2>
 </div>
 <p>Відкрийте <a href="https://app.atomtranslate.com/">app.atomtranslate.com</a> і увійдіть своїм звичайним акаунтом. Якщо PDF на цьому ж комп'ютері — це найшвидший шлях, телефон не потрібен.</p>
-<p class="meta">Веб-версія в беті: більшість речей працює, але можливі шорсткості. Застосунок на телефоні (крок 3) — повністю релізний варіант.</p>
 <ol>
   <li>У <strong>Library</strong> відкрийте папку, куди хочете додати слова.</li>
   <li>Натисніть <strong>⋯</strong> → <strong>Import from Quizlet</strong>.</li>

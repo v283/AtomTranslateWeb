@@ -47,7 +47,7 @@
   "name": "Atom Translate",
   "alternateName": "Atom Translate — vocabulary app like Quizlet",
   "applicationCategory": "EducationalApplication",
-  "operatingSystem": "Android, iOS",
+  "operatingSystem": "Android, iOS, Web",
   "description": "Offline-first dictionary and vocabulary-learning app with six study modes (flashcards, quiz, writing, matching, true/false and listening), section leaderboards, community decks, and free Quizlet PDF import.",
   "url": "https://atomtranslate.com/",
   "image": "https://atomtranslate.com/og-image.png?v=2",
@@ -93,7 +93,7 @@
     {
       "@type": "Question",
       "name": "What platforms is Atom Translate available on?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Atom Translate is available now on Android via Google Play and on iOS via the App Store." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Atom Translate is available on Android via Google Play, on iOS via the App Store, and in any modern browser at app.atomtranslate.com." }
     }
   ]
 }
@@ -108,6 +108,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/demo.css">
 </head>
 <body>
@@ -124,10 +125,14 @@
       <a href="#features">Features</a>
       <a href="#screens">Screenshots</a>
       <a href="/decks">Decks</a>
-      <a class="nav-webapp" href="https://app.atomtranslate.com/login">Web app <span class="beta-tag">Beta</span></a>
+      <a class="nav-webapp" href="https://app.atomtranslate.com/login">Web app</a>
       <a href="tutorial-quizlet-import.html">Import from Quizlet</a>
     </nav>
     <div class="header-actions">
+      <button class="theme-toggle" type="button" hidden data-theme-toggle data-label-light="Switch to light theme" data-label-dark="Switch to dark theme" aria-label="Switch theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.7 14.6A8.6 8.6 0 0 1 9.4 3.3a.8.8 0 0 0-1-1A10 10 0 1 0 21.7 15.6a.8.8 0 0 0-1-1Z"/></svg>
+      </button>
       <nav class="lang-switch" aria-label="Language">
         <a href="/" class="is-active" hreflang="en" lang="en">EN</a>
         <a href="/uk/" hreflang="uk" lang="uk">УК</a>
@@ -147,24 +152,21 @@
         <p class="hero-lede">Searching for apps like Quizlet but free? Atom Translate is a free Quizlet alternative built around six study modes — flashcards, quiz, writing, matching, true/false and listening — a flashcard app free of subscriptions, paywalls, and locked study modes.</p>
         <p class="hero-note">Already have sets on Quizlet? <a href="tutorial-quizlet-import.html">Import them for free →</a></p>
         <div class="hero-ctas">
-          <a class="btn-store is-live" href="https://play.google.com/store/apps/details?id=com.valentineos.atomtranslate" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>
-            <span class="store-copy"><small>Get it on</small><strong>Google Play</strong></span>
+          <a class="store-badge" href="https://apps.apple.com/ua/app/atom-translate-learn-words/id6792120675" target="_blank" rel="noopener">
+            <img src="assets/badges/app-store-en.svg" alt="App Store" width="144" height="48">
           </a>
-          <a class="btn-store is-live" href="https://apps.apple.com/ua/app/atom-translate-learn-words/id6792120675" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>
-            <span class="store-copy"><small>Download on the</small><strong>App Store</strong></span>
+          <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.valentineos.atomtranslate" target="_blank" rel="noopener">
+            <img src="assets/badges/google-play-en.png" alt="Google Play" width="161" height="48">
           </a>
           <a class="btn-store is-live is-web" href="https://app.atomtranslate.com/login">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9s1.3-6.3 3.8-9Z"/></svg>
             <span class="store-copy"><small>In your browser</small><strong>Open web app</strong></span>
-            <span class="beta-tag">Beta</span>
           </a>
         </div>
         <div class="hero-stats">
           <div class="stat"><strong>6</strong><span>Study modes</span></div>
           <div class="stat"><strong>Free</strong><span>All features</span></div>
-          <div class="stat"><strong>2</strong><span>Platforms</span></div>
+          <div class="stat"><strong>3</strong><span>Platforms</span></div>
         </div>
       </div>
       <div class="hero-visual">
@@ -280,6 +282,41 @@
     </div>
   </section>
 
+  <section class="section" id="decks">
+    <div class="container">
+      <div class="decks-band">
+        <div>
+          <span class="eyebrow">Public decks</span>
+          <h2>Find a ready-made deck</h2>
+          <p>Search word lists other learners have published — by textbook, unit, topic or level. Every deck opens as a page with all its words, no sign-in needed.</p>
+          <ul class="decks-points">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Every word with its translation and pronunciation, plus pictures where the author added them</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Study a deck in all six modes, in the app or in your browser</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Race other learners on each section's leaderboard</span></li>
+          </ul>
+        </div>
+        <form class="deck-search" method="get" action="/decks" role="search">
+          <label class="deck-search__label" for="deck-q">Search public decks</label>
+          <div class="deck-search__row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="deck-q" name="q" type="search" placeholder="For example: Headway unit 3" maxlength="100" autocomplete="off" enterkeyhint="search">
+            <button class="btn btn-primary" type="submit">Search</button>
+          </div>
+          <span class="deck-search__label">Popular</span>
+          <div class="deck-chips">
+          <a href="/decks?language=English">English</a>
+          <a href="/decks?language=German">German</a>
+          <a href="/decks?level=A1">A1</a>
+          <a href="/decks?level=B1">B1</a>
+          <a href="/decks?level=B2">B2</a>
+          <a href="/decks?category=Travel">Travel</a>
+          </div>
+          <a class="deck-search__all" href="/decks">Browse all decks →</a>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="compare">
     <div class="container">
       <div class="section-head">
@@ -353,7 +390,7 @@
         </div>
         <div class="faq-item">
           <h3>What platforms is Atom Translate available on?</h3>
-          <p>Atom Translate is available now on Android via Google Play and on iOS via the App Store.</p>
+          <p>Atom Translate is available on Android via Google Play, on iOS via the App Store, and in any modern browser at app.atomtranslate.com.</p>
         </div>
       </div>
     </div>
@@ -406,21 +443,18 @@
       <div class="cta-band">
         <div>
           <h2>Ready to start building your vocabulary?</h2>
-          <p>Atom Translate is available on Android and iOS now. The web app is in beta — some features may be missing or unstable.</p>
+          <p>Atom Translate is free on Android, iOS and in your browser. Sign in once and your folders, words and progress follow you to every device.</p>
         </div>
         <div class="cta-actions">
-          <a class="btn-store is-live" href="https://play.google.com/store/apps/details?id=com.valentineos.atomtranslate" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3.6c0-.5.3-.9.7-1.1L14.3 12 3.7 21.5c-.4-.2-.7-.6-.7-1.1V3.6Zm12.5 9.5 2.6-2.6 3.4 2c.7.4.7 1.5 0 1.9l-3.4 2-2.6-2.6ZM4.8 2.2 16 8.6l-2.3 2.3-8.9-8.7Zm0 19.6 8.9-8.7L16 15.4 4.8 21.8Z"/></svg>
-            <span class="store-copy"><small>Get it on</small><strong>Google Play</strong></span>
+          <a class="store-badge" href="https://apps.apple.com/ua/app/atom-translate-learn-words/id6792120675" target="_blank" rel="noopener">
+            <img src="assets/badges/app-store-en.svg" alt="App Store" width="144" height="48">
           </a>
-          <a class="btn-store is-live" href="https://apps.apple.com/ua/app/atom-translate-learn-words/id6792120675" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.5c-.03-2.8 2.28-4.15 2.39-4.22-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.35 1.02-4.22 1.02-.87 0-2.2-1-3.63-.97-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.68 0 2.17.9 3.65.87 1.51-.03 2.46-1.37 3.38-2.72 1.07-1.55 1.5-3.06 1.53-3.13-.03-.01-2.94-1.13-2.97-4.44Zm-2.8-8.16c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.55Z"/></svg>
-            <span class="store-copy"><small>Download on the</small><strong>App Store</strong></span>
+          <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.valentineos.atomtranslate" target="_blank" rel="noopener">
+            <img src="assets/badges/google-play-en.png" alt="Google Play" width="161" height="48">
           </a>
           <a class="btn-store is-live is-web" href="https://app.atomtranslate.com/login">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9s1.3-6.3 3.8-9Z"/></svg>
             <span class="store-copy"><small>In your browser</small><strong>Open web app</strong></span>
-            <span class="beta-tag">Beta</span>
           </a>
         </div>
       </div>
@@ -445,6 +479,7 @@
           <h4>Product</h4>
           <a href="#features">Features</a>
           <a href="#modes">Study modes</a>
+          <a href="/decks">Public decks</a>
           <a href="#download">Download</a>
         </div>
         <div class="footer-col">
