@@ -11,15 +11,37 @@
 // combination of filters.
 
 import { SITE_ORIGIN, escapeHtml, breakableHtml, searchDecks, fetchDeckFacets } from "../_lib/community.js";
-import { strings, fmt, countLabel, languageName, categoryName, wordsPhrase, deckLang } from "../_lib/deck-i18n.js";
+import { strings, fmt, plural, countLabel, languageName, categoryName, wordsPhrase, deckLang } from "../_lib/deck-i18n.js";
 import { deckSlug } from "../_lib/slug.js";
-import { documentShell, headerHtml, footerHtml, pageHeaders, deckPath } from "../_lib/deck-page.js";
+import { documentShell, headerHtml, footerHtml, pageHeaders, deckPath, truncate, ICONS } from "../_lib/deck-page.js";
 import { cacheKeyFor, fromCache, toCache, messageResponse, headFrom } from "../_lib/deck-route.js";
 
 const LANG = "uk";
 const PAGE_SIZE = 24;
 const MIN_WORDS = 1;
 const FILTERS = ["language", "native", "level", "category"];
+
+// Filter options are the same for every search, filter and page: cached once at the edge for ten
+// minutes rather than read again for each new combination the catalog renders.
+const FACETS_TTL = 600;
+
+async function cachedFacets(context, url) {
+  // A path no route serves, so the entry can never be mistaken for a page.
+  const key = new Request(`${url.origin}/__cache/deck-facets?min=${MIN_WORDS}`, { method: "GET" });
+  const hit = await fromCache(key);
+  if (hit) {
+    try {
+      return await hit.json();
+    } catch {
+      // A damaged entry: read the facets again below.
+    }
+  }
+  const facets = await fetchDeckFacets(MIN_WORDS);
+  if (facets.length) {
+    toCache(context, key, Response.json(facets, { headers: { "Cache-Control": `public, max-age=${FACETS_TTL}, s-maxage=${FACETS_TTL}` } }));
+  }
+  return facets;
+}
 
 function readQuery(url) {
   const get = (name, max) => String(url.searchParams.get(name) || "").trim().slice(0, max);
@@ -50,7 +72,7 @@ function selectHtml(name, label, current, options, s) {
   const known = options.some((o) => o.value === current);
   const all = known || !current ? options : [{ value: current, label: current }, ...options];
   return `
-    <div class="field">
+    <div class="field${current ? " is-set" : ""}">
       <label for="${id}">${escapeHtml(label)}</label>
       <select id="${id}" name="${name}">
         <option value="">${escapeHtml(s.filterAny)}</option>
@@ -65,6 +87,9 @@ function facetOptions(facets, kind, labelFor) {
     .map((f) => ({ value: f.value, label: `${labelFor(f.value)} (${f.decks})` }));
 }
 
+// A deck as the app's library shows a folder: the folder pictogram on an AccentLight tile, name,
+// word and section count; then a two-line description, the pills (pinned to the bottom so a row
+// of cards lines up) and the author.
 function deckCardHtml(folder, s) {
   const lang = deckLang(folder);
   const href = `${SITE_ORIGIN}${deckPath(folder.short_id, deckSlug(folder, lang))}`;
@@ -75,13 +100,24 @@ function deckCardHtml(folder, s) {
     { text: categoryName(LANG, folder.category), kind: "category" },
   ].filter((c) => c.text);
   const count = Number(folder.word_count) || 0;
+  const sections = Number(folder.section_count) || 0;
+  const meta = [wordsPhrase(LANG, count, folder.language)];
+  if (sections > 1) meta.push(`${sections} ${plural(LANG, sections, s.sections)}`);
+  const description = folder.description ? truncate(folder.description, 160) : "";
+  const author = String(folder.author_name || "").trim();
   return `
       <li class="deck-card">
         <a href="${escapeHtml(href)}">
-          <h2 class="deck-card__name">${breakableHtml(folder.name)}</h2>
-          <span class="deck-card__count">${escapeHtml(wordsPhrase(LANG, count, folder.language))}</span>
-          ${folder.description ? `<span class="deck-card__desc">${escapeHtml(String(folder.description).trim().slice(0, 140))}</span>` : ""}
+          <span class="deck-card__head">
+            <span class="deck-card__icon"><img src="/assets/icons/open_file_folder.png" width="30" height="30" alt="" loading="lazy"></span>
+            <span class="deck-card__title">
+              <h2 class="deck-card__name">${breakableHtml(folder.name)}</h2>
+              <span class="deck-card__count">${escapeHtml(meta.join(" · "))}</span>
+            </span>
+          </span>
+          ${description ? `<span class="deck-card__desc">${escapeHtml(description)}</span>` : ""}
           ${chips.length ? `<span class="deck-card__chips">${chips.map((c) => `<span class="chip chip--${c.kind}">${escapeHtml(c.text)}</span>`).join("")}</span>` : ""}
+          ${author ? `<span class="deck-card__author"><span class="deck-card__avatar" aria-hidden="true">${escapeHtml(Array.from(author)[0].toUpperCase())}</span><span><span class="sr-only">${escapeHtml(s.by)}: </span>${escapeHtml(author)}</span></span>` : ""}
         </a>
       </li>`;
 }
@@ -128,7 +164,7 @@ export async function onRequestGet(context) {
         limit: PAGE_SIZE,
         offset: (state.page - 1) * PAGE_SIZE,
       }),
-      fetchDeckFacets(MIN_WORDS),
+      cachedFacets(context, url),
     ]);
   } catch {
     return messageResponse("unavailable", url, LANG);
@@ -141,28 +177,33 @@ export async function onRequestGet(context) {
   const canonical = `${SITE_ORIGIN}/decks${state.page > 1 && !filtered ? `?page=${state.page}` : ""}`;
   const title = `${s.catalogTitle}${state.page > 1 ? ` — ${fmt(s.page, state.page)}` : ""} | Atom Translate`;
 
+  // One search row (query + button), then the four filters in a row. deck.js submits the form
+  // as soon as a filter changes; the button is there for the query and for no-JS visitors.
   const form = `
   <form class="filters" method="get" action="/decks" role="search">
-    <div class="field field--search">
-      <label for="f-q">${escapeHtml(s.search)}</label>
-      <input id="f-q" name="q" type="search" value="${escapeHtml(state.q)}" placeholder="${escapeHtml(s.searchPlaceholder)}" maxlength="100" autocomplete="off">
+    <div class="filters__search">
+      <label class="sr-only" for="f-q">${escapeHtml(s.search)}</label>
+      <span class="filters__search-box">
+        ${ICONS.search}
+        <input id="f-q" name="q" type="search" value="${escapeHtml(state.q)}" placeholder="${escapeHtml(s.searchPlaceholder)}" maxlength="100" autocomplete="off" enterkeyhint="search">
+      </span>
+      <button class="btn btn--primary filters__submit" type="submit">${escapeHtml(s.searchButton)}</button>
     </div>
-    ${selectHtml("language", s.filterLanguage, state.language, facetOptions(facets, "language", (v) => languageName(LANG, v)), s)}
-    ${selectHtml("native", s.filterNative, state.native, facetOptions(facets, "native_language", (v) => languageName(LANG, v)), s)}
-    ${selectHtml("level", s.filterLevel, state.level, facetOptions(facets, "level", (v) => v), s)}
-    ${selectHtml("category", s.filterCategory, state.category, facetOptions(facets, "category", (v) => categoryName(LANG, v)), s)}
-    <div class="filters__actions">
-      <button class="btn btn--primary" type="submit">${escapeHtml(s.apply)}</button>
-      ${filtered ? `<a class="btn btn--secondary" href="/decks">${escapeHtml(s.reset)}</a>` : ""}
+    <div class="filters__grid">
+      ${selectHtml("language", s.filterLanguage, state.language, facetOptions(facets, "language", (v) => languageName(LANG, v)), s)}
+      ${selectHtml("native", s.filterNative, state.native, facetOptions(facets, "native_language", (v) => languageName(LANG, v)), s)}
+      ${selectHtml("level", s.filterLevel, state.level, facetOptions(facets, "level", (v) => v), s)}
+      ${selectHtml("category", s.filterCategory, state.category, facetOptions(facets, "category", (v) => categoryName(LANG, v)), s)}
     </div>
   </form>`;
 
+  const resetLink = filtered ? `<a class="results__reset" href="/decks">${escapeHtml(s.reset)}</a>` : "";
   const list = result.rows.length
-    ? `<p class="found" role="status">${escapeHtml(countLabel(LANG, result.total, s.found))}</p>
+    ? `<div class="results__bar"><p class="found" role="status">${escapeHtml(countLabel(LANG, result.total, s.found))}</p>${resetLink}</div>
   <ul class="deck-list">${result.rows.map((f) => deckCardHtml(f, s)).join("")}
   </ul>
   ${paginationHtml(state, result.total, s)}`
-    : `<p class="found" role="status">${escapeHtml(s.noResults)}</p>`;
+    : `<div class="empty"><img src="/assets/icons/open_file_folder.png" width="48" height="48" alt=""><p class="found" role="status">${escapeHtml(s.noResults)}</p>${resetLink}</div>`;
 
   const html = documentShell({
     lang: LANG,
@@ -190,16 +231,16 @@ export async function onRequestGet(context) {
       },
     },
     bodyHtml: `
-${headerHtml(s, { homeHref: `${SITE_ORIGIN}/uk/` })}
+${headerHtml(s, { homeHref: `${SITE_ORIGIN}/uk/`, wide: true })}
 <main class="page page--wide">
   <section class="catalog-head">
     <h1>${escapeHtml(s.catalogH1)}</h1>
-    <p class="hero__desc">${escapeHtml(s.catalogIntro)}</p>
+    <p class="catalog-head__intro">${escapeHtml(s.catalogIntro)}</p>
   </section>
   ${form}
   ${list}
 </main>
-${footerHtml(s, LANG)}`,
+${footerHtml(s, LANG, { wide: true })}`,
   });
 
   const response = new Response(html, {

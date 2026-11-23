@@ -79,9 +79,16 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  /* The site's type (style.css): Inter for text, Space Grotesk for headings. */
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .brand span, .hero__name {
+  font-family: "Space Grotesk", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
 }
 
 a { color: var(--accent-text); }
@@ -99,6 +106,8 @@ a { color: var(--accent-text); }
   display: flex; align-items: center; justify-content: space-between;
   max-width: 760px; margin: 0 auto; padding: 12px 16px;
 }
+/* The catalog is wider than a deck page; header and footer line up with its content. */
+.top.top--wide, .foot.foot--wide { max-width: 1040px; }
 
 .brand {
   display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
@@ -368,48 +377,132 @@ a { color: var(--accent-text); }
 
 /* ------------------------------------------------------------------ catalog */
 
-.catalog-head h1 { font-size: 28px; margin: 8px 0 4px; }
+.catalog-head { margin: 20px 0 20px; }
+.catalog-head h1 { font-size: 30px; line-height: 1.15; margin: 0 0 8px; }
+.catalog-head__intro { margin: 0; color: var(--text-muted); max-width: 60ch; }
 
+/* Search: one box with the query and the button, then the four filters in a row. */
 .filters {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
-  margin: 16px 0; padding: 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 14px;
+  margin: 0 0 24px; padding: 16px; border-radius: 20px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
 }
-.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.field label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.field--search, .filters__actions { grid-column: 1 / -1; }
-.field input, .field select {
-  width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 10px; font: inherit;
-  color: var(--text); background: var(--surface-alt); border: 1px solid var(--border-strong);
+
+.filters__search { display: flex; gap: 8px; }
+.filters__search-box {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  padding: 0 14px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border-strong);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.filters__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.filters__search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.filters__search-box svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-muted); }
+.filters__search-box input {
+  flex: 1; min-width: 0; min-height: 48px; padding: 0; border: 0; outline: none;
+  background: transparent; color: var(--text); font: inherit; font-size: 16px;
+}
+.filters__search-box input::placeholder { color: var(--text-muted); opacity: 0.8; }
+.filters__search-box input::-webkit-search-cancel-button { cursor: pointer; }
+.filters__submit { font-size: 16px; padding: 0 22px; min-height: 50px; }
 
-.found { color: var(--text-muted); margin: 8px 0 12px; }
+.filters__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 
-.deck-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.field { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+/* Native selects with the system arrow replaced, so they read as the same control on every OS. */
+.field select {
+  width: 100%; min-height: 44px; padding: 8px 36px 8px 12px; border-radius: 12px;
+  font: inherit; font-size: 15px; font-weight: 500; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border-strong);
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.field::after {
+  content: ""; position: absolute; right: 14px; bottom: 18px; width: 7px; height: 7px;
+  border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted);
+  transform: rotate(45deg); pointer-events: none;
+}
+.field select:hover { border-color: var(--accent); }
+/* A filter in use: tinted like the app's selected pill. */
+.field.is-set select { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+.field.is-set::after { border-color: var(--accent-text); }
+
+.results__bar { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.found { color: var(--text-muted); margin: 0; font-weight: 600; }
+.results__reset { font-weight: 600; font-size: 15px; }
+
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+  padding: 40px 20px; border-radius: 20px; border: 1px dashed var(--border-strong);
+}
+.empty .found { max-width: 40ch; font-weight: 500; }
+
+/* Deck cards: the app's library folder row, as a card. */
+.deck-list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
 .deck-card a {
-  display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 16px; border-radius: 18px;
+  display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 18px; border-radius: 20px;
   background: var(--surface); border: 1px solid var(--border); color: var(--text); text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.deck-card a:hover { border-color: var(--accent); }
-.deck-card__name { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
-.deck-card__count { font-weight: 600; color: var(--text-muted); font-size: 14px; }
-.deck-card__desc { font-size: 14px; color: var(--text-muted); }
-.deck-card__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.deck-card a:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.deck-card__head { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.deck-card__icon {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft);
+}
+.deck-card__icon img { object-fit: contain; }
+.deck-card__title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.deck-card__name { margin: 0; font-size: 18px; line-height: 1.25; overflow-wrap: anywhere; }
+.deck-card__count { font-weight: 500; color: var(--text-muted); font-size: 14px; }
+.deck-card__desc {
+  font-size: 14px; color: var(--text-muted); overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* Pills and author sit at the bottom, so the cards in a row line up. */
+.deck-card__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.deck-card__author {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+}
+.deck-card__author > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-card__chips + .deck-card__author { margin-top: 0; }
+.deck-card__head + .deck-card__author, .deck-card__desc + .deck-card__author { margin-top: auto; }
+.deck-card__avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 800;
+}
 
-.pager { display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0; }
+.pager { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 28px 0; }
 .pager a, .pager span {
   display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;
-  padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); text-decoration: none;
+  padding: 0 12px; border-radius: 12px; border: 1px solid var(--border-strong); text-decoration: none;
+  background: var(--surface); font-weight: 600;
 }
+.pager a:hover { border-color: var(--accent); }
 .pager span[aria-current] { background: var(--accent-soft); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+
+@media (max-width: 480px) {
+  .filters { padding: 12px; }
+  .filters__submit { padding: 0 16px; }
+  .filters__search-box svg { display: none; }
+}
 
 @media (min-width: 640px) {
   .hero { padding: 32px 36px; }
   .hero__name { font-size: 34px; }
   .cta { flex-direction: row; flex-wrap: wrap; }
   .quiz__actions { flex-direction: row; flex-wrap: wrap; }
-  .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catalog-head h1 { font-size: 38px; }
   .deck-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 860px) {
+  .filters__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (min-width: 960px) {
@@ -417,7 +510,8 @@ a { color: var(--accent-text); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chev, .sticky-cta { transition: none; }
+  .chev, .sticky-cta, .deck-card a { transition: none; }
+  .deck-card a:hover { transform: none; }
 }
 
 /* ------------------------------------------------------------------ stats */
