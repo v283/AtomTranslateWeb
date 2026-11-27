@@ -7,7 +7,7 @@
   var root = document.getElementById('atom-demo');
   if (!root) return;
 
-  var LANG = root.getAttribute('data-lang') === 'uk' ? 'uk' : 'en';
+  var REQ_LANG = root.getAttribute('data-lang');
   var BARE = root.getAttribute('data-bare') === 'true';
   var AUTO = root.getAttribute('data-autoplay') !== 'false';
   var FRAMES = root.getAttribute('data-frames');
@@ -54,8 +54,81 @@
       },
       modes: ['Картки', 'Тест', 'Письмо', 'Пари', 'Правда чи ні', 'Аудіювання'],
       play: 'Відтворити демо'
+    },
+    de: {
+      ch: {
+        translate: ['Übersetzen & speichern', 'Übersetzung wählen und in einem Ordner speichern'],
+        library: ['Deine Bibliothek', 'Ordner und Abschnitte mit deinen Wörtern'],
+        flashcards: ['Karteikarten', 'Karte umdrehen, markieren, was du wusstest'],
+        quiz: ['Quiz', 'Die richtige Übersetzung wählen'],
+        writing: ['Schreiben', 'Wort tippen, bei Bedarf Hinweise nutzen'],
+        matching: ['Zuordnen', 'Jedes Wort seiner Übersetzung zuordnen'],
+        truefalse: ['Richtig / Falsch', 'Stimmt die Übersetzung?'],
+        listening: ['Hören', 'Zuhören, dann wählen oder schreiben'],
+        leaderboard: ['Bestenliste', 'Schlage die Bestzeit in jedem Modus'],
+        progress: ['Fortschritt', 'Serien, Aktivität und Tagesziel'],
+        import: ['Wörter aus einem Foto', 'Wortliste fotografieren, prüfen und importieren'],
+        quizlet: ['Import aus Quizlet', 'Deine Sets als PDF übernehmen']
+      },
+      modes: ['Karteikarten', 'Quiz', 'Schreiben', 'Zuordnen', 'Richtig / Falsch', 'Hören'],
+      play: 'Demo abspielen'
+    },
+    pl: {
+      ch: {
+        translate: ['Tłumacz i zapisz', 'Wybierz tłumaczenie i zapisz je w folderze'],
+        library: ['Twoja biblioteka', 'Foldery i sekcje z Twoimi słowami'],
+        flashcards: ['Fiszki', 'Odwróć kartę i zaznacz, co już znasz'],
+        quiz: ['Quiz', 'Wybierz poprawne tłumaczenie'],
+        writing: ['Pisanie', 'Wpisz słowo, a w razie potrzeby użyj podpowiedzi'],
+        matching: ['Dopasowywanie', 'Połącz każde słowo z jego tłumaczeniem'],
+        truefalse: ['Prawda / fałsz', 'Czy tłumaczenie jest poprawne?'],
+        listening: ['Słuchanie', 'Posłuchaj, potem wybierz lub napisz'],
+        leaderboard: ['Ranking', 'Pobij najlepszy czas w każdym trybie'],
+        progress: ['Postępy', 'Serie dni, aktywność i dzienny cel'],
+        import: ['Słowa ze zdjęcia', 'Sfotografuj listę słów, sprawdź i zaimportuj'],
+        quizlet: ['Import z Quizleta', 'Przenieś swoje zestawy jako PDF']
+      },
+      modes: ['Fiszki', 'Quiz', 'Pisanie', 'Dopasowywanie', 'Prawda / fałsz', 'Słuchanie'],
+      play: 'Odtwórz demo'
+    },
+    ja: {
+      ch: {
+        translate: ['翻訳して保存', '訳を選んでフォルダに保存'],
+        library: ['ライブラリ', 'あなたの単語が入ったフォルダとセクション'],
+        flashcards: ['単語カード', 'カードをめくって、わかったかどうかを記録'],
+        quiz: ['クイズ', '正しい訳を選ぶ'],
+        writing: ['書き取り', '単語を入力、困ったらヒントも'],
+        matching: ['マッチング', '単語と訳をペアにする'],
+        truefalse: ['○×', 'この訳は合っている？'],
+        listening: ['リスニング', '聞いてから選ぶか入力する'],
+        leaderboard: ['ランキング', '各モードでベストタイムを更新'],
+        progress: ['進捗', '連続日数、アクティビティ、毎日の目標'],
+        import: ['写真から単語を取り込む', '単語リストを撮影して、確認してインポート'],
+        quizlet: ['Quizletからインポート', 'セットをPDFで移行']
+      },
+      modes: ['単語カード', 'クイズ', '書き取り', 'マッチング', '○×', 'リスニング'],
+      play: 'デモを再生'
+    },
+    ar: {
+      ch: {
+        translate: ['ترجم واحفظ', 'اختر ترجمة واحفظها في مجلد'],
+        library: ['مكتبتك', 'مجلدات وأقسام تضم كلماتك'],
+        flashcards: ['البطاقات التعليمية', 'اقلب البطاقة وحدّد ما كنت تعرفه'],
+        quiz: ['الاختبار', 'اختر الترجمة الصحيحة'],
+        writing: ['الكتابة', 'اكتب الكلمة واستعن بالتلميحات عند الحاجة'],
+        matching: ['المطابقة', 'اربط كل كلمة بترجمتها'],
+        truefalse: ['صح / خطأ', 'هل الترجمة صحيحة؟'],
+        listening: ['الاستماع', 'استمع ثم اختر أو اكتب'],
+        leaderboard: ['لوحة المتصدرين', 'حطّم أفضل وقت في كل وضع'],
+        progress: ['التقدّم', 'السلاسل والنشاط والهدف اليومي'],
+        import: ['كلمات من صورة', 'صوّر قائمة كلمات وراجعها ثم استوردها'],
+        quizlet: ['الاستيراد من Quizlet', 'انقل مجموعاتك كملف PDF']
+      },
+      modes: ['البطاقات التعليمية', 'الاختبار', 'الكتابة', 'المطابقة', 'صح / خطأ', 'الاستماع'],
+      play: 'تشغيل العرض التجريبي'
     }
   };
+  var LANG = TXT[REQ_LANG] ? REQ_LANG : 'en';
   var L = TXT[LANG];
 
   /* ---------- розмітка ---------- */

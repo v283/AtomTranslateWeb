@@ -19,10 +19,11 @@ import { cacheKeyFor, fromCache, toCache } from "./_lib/deck-route.js";
 const MAX_DECKS = 5000;
 
 // The landing locales are alternates of each other (mirrors the <link rel="alternate">
-// tags in index.html and uk/index.html).
+// tags in the landing pages).
+const LANDING_LANGS = ["en", "uk", "ar", "ja", "de", "pl"];
+const landingPath = (lang) => (lang === "en" ? "/" : `/${lang}/`);
 const LANDING_ALTERNATES = [
-  { hreflang: "en", path: "/" },
-  { hreflang: "uk", path: "/uk/" },
+  ...LANDING_LANGS.map((lang) => ({ hreflang: lang, path: landingPath(lang) })),
   { hreflang: "x-default", path: "/" },
 ];
 
@@ -34,8 +35,7 @@ const TUTORIAL_ALTERNATES = [
 ];
 
 const STATIC_PAGES = [
-  { path: "/", alternates: LANDING_ALTERNATES },
-  { path: "/uk/", alternates: LANDING_ALTERNATES },
+  ...LANDING_LANGS.map((lang) => ({ path: landingPath(lang), alternates: LANDING_ALTERNATES })),
   { path: "/support.html" },
   { path: "/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/uk/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },

@@ -71,3 +71,22 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+
+/* The language menu (<details data-lang-menu>) closes on an outside click, on Escape, and when focus leaves. */
+(function () {
+  function menus() { return document.querySelectorAll("details[data-lang-menu][open]"); }
+  document.addEventListener("click", function (e) {
+    Array.prototype.forEach.call(menus(), function (m) { if (!m.contains(e.target)) m.removeAttribute("open"); });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    Array.prototype.forEach.call(menus(), function (m) {
+      m.removeAttribute("open");
+      var s = m.querySelector("summary");
+      if (s) s.focus();
+    });
+  });
+  document.addEventListener("focusin", function (e) {
+    Array.prototype.forEach.call(menus(), function (m) { if (!m.contains(e.target)) m.removeAttribute("open"); });
+  });
+})();
