@@ -173,6 +173,11 @@ a { color: var(--accent-text); }
 .foot nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-muted); }
 
+/* Catalog language switcher: every version as a plain link, the current one marked. */
+.foot .foot__langs { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border); gap: 0 18px; }
+.foot__langs a, .foot__langs span { display: inline-flex; align-items: center; min-height: 36px; font-size: 14px; }
+.foot__langs span { color: var(--text); font-weight: 600; }
+
 /* ------------------------------------------------------------------ hero */
 
 .hero {

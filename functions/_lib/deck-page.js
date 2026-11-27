@@ -16,7 +16,7 @@ import {
 import { sectionSlug } from "./slug.js";
 import {
   strings, fmt, plural, countLabel, wordsPhrase, languageName, categoryName, modeName,
-  LANGUAGE_CODES,
+  LANGUAGE_CODES, catalogPath, textDirection, ogLocale,
 } from "./deck-i18n.js";
 import { isIndexableDeck, isIndexableSection } from "./indexing.js";
 
@@ -121,17 +121,17 @@ function headerHtml(s, { homeHref, webLink, wide = false }) {
 </header>`;
 }
 
-function footerHtml(s, lang, { wide = false } = {}) {
+function footerHtml(s, lang, { wide = false, extraHtml = "" } = {}) {
   const home = lang === "uk" ? "/uk/" : "/";
   return `
 <footer class="foot${wide ? " foot--wide" : ""}">
   <div class="foot__stores">${storeBadgesHtml(s)}</div>
   <nav aria-label="Atom Translate">
-    <a href="/decks">${escapeHtml(s.allDecks)}</a>
+    <a href="${catalogPath(lang)}">${escapeHtml(s.allDecks)}</a>
     <a href="${SITE_ORIGIN}${home}">Atom Translate</a>
     <a href="${SITE_ORIGIN}/support.html">${escapeHtml(s.support)}</a>
     <a href="${SITE_ORIGIN}/privacy-policy.html">${escapeHtml(s.privacy)}</a>
-  </nav>
+  </nav>${extraHtml}
 </footer>`;
 }
 
@@ -163,10 +163,10 @@ function androidBannerHtml(s, intentUrl) {
  * App Banner pointing at it.
  */
 export function documentShell({
-  lang, title, description, robots, canonical, ogUrl, jsonLd, appLink, bodyHtml, pageData, ogType = "website",
+  lang, title, description, robots, canonical, ogUrl, jsonLd, appLink, bodyHtml, pageData, ogType = "website", alternates,
 }) {
   return `<!doctype html>
-<html lang="${escapeHtml(lang)}" data-theme="dark">
+<html lang="${escapeHtml(lang)}" dir="${textDirection(lang)}" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -175,6 +175,7 @@ export function documentShell({
 <meta name="description" content="${escapeHtml(description)}">
 <meta name="robots" content="${escapeHtml(robots)}">
 ${canonical ? `<link rel="canonical" href="${escapeHtml(canonical)}">\n` : ""}<meta name="color-scheme" content="dark light">
+${(alternates || []).map((a) => `<link rel="alternate" hreflang="${escapeHtml(a.hreflang)}" href="${escapeHtml(a.href)}">`).join("\n")}
 <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#F8F9FB" media="(prefers-color-scheme: light)">
 ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-argument=${escapeHtml(appLink)}">\n` : ""}<meta property="og:type" content="${escapeHtml(ogType)}">
@@ -183,7 +184,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(ogUrl)}">
 <meta property="og:image" content="${SITE_ORIGIN}/og-image.png?v=2">
-<meta property="og:locale" content="${lang === "uk" ? "uk_UA" : "en_US"}">
+<meta property="og:locale" content="${ogLocale(lang)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
@@ -193,7 +194,7 @@ ${appLink ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}, app-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/deck.css?v=12">
+<link rel="stylesheet" href="/assets/deck.css?v=13">
 ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>\n` : ""}</head>
 <body>
 ${bodyHtml}
@@ -296,7 +297,7 @@ function deckJsonLd({ folder, sections, facts, description, canonical, lang, aut
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Atom Translate", item: `${SITE_ORIGIN}/` },
-          { "@type": "ListItem", position: 2, name: s.decks, item: `${SITE_ORIGIN}/decks` },
+          { "@type": "ListItem", position: 2, name: s.decks, item: `${SITE_ORIGIN}${catalogPath(lang)}` },
           { "@type": "ListItem", position: 3, name: folder.name, item: canonical },
         ],
       },
@@ -503,7 +504,7 @@ ${androidBannerHtml(s, intentUrl(shortId))}
 ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, webLink: webCommunityLink(folder.short_id) })}
 <main class="page">
   <nav class="crumbs" aria-label="Breadcrumb">
-    <ol><li><a href="/decks">${escapeHtml(s.decks)}</a></li><li aria-current="page">${escapeHtml(folder.name)}</li></ol>
+    <ol><li><a href="${catalogPath(lang)}">${escapeHtml(s.decks)}</a></li><li aria-current="page">${escapeHtml(folder.name)}</li></ol>
   </nav>
   <section class="hero" aria-labelledby="deck-title">
     <div class="hero__head">
@@ -603,7 +604,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}`, web
 <main class="page">
   <nav class="crumbs" aria-label="Breadcrumb">
     <ol>
-      <li><a href="/decks">${escapeHtml(s.decks)}</a></li>
+      <li><a href="${catalogPath(lang)}">${escapeHtml(s.decks)}</a></li>
       <li><a href="${escapeHtml(pathOf(deckUrl))}">${escapeHtml(folder.name)}</a></li>
       <li aria-current="page">${escapeHtml(section.name)}</li>
     </ol>
@@ -645,7 +646,7 @@ ${hasQuiz ? `<div class="sticky-cta" hidden data-sticky-cta><a class="btn btn--p
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Atom Translate", item: `${SITE_ORIGIN}/` },
-          { "@type": "ListItem", position: 2, name: s.decks, item: `${SITE_ORIGIN}/decks` },
+          { "@type": "ListItem", position: 2, name: s.decks, item: `${SITE_ORIGIN}${catalogPath(lang)}` },
           { "@type": "ListItem", position: 3, name: folder.name, item: deckUrl },
           { "@type": "ListItem", position: 4, name: section.name, item: canonical },
         ],
@@ -706,7 +707,7 @@ ${headerHtml(s, { homeHref: `${SITE_ORIGIN}${lang === "uk" ? "/uk/" : "/"}` })}
   <section class="hero hero--message">
     <h1>${escapeHtml(title)}</h1>
     <p class="hero__desc">${escapeHtml(body)}</p>
-    <div class="cta"><a class="btn btn--primary" href="${SITE_ORIGIN}/decks">${escapeHtml(s.allDecks)}</a></div>
+    <div class="cta"><a class="btn btn--primary" href="${SITE_ORIGIN}${catalogPath(lang)}">${escapeHtml(s.allDecks)}</a></div>
   </section>
 </main>
 ${footerHtml(s, lang)}`,

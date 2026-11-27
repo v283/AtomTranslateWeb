@@ -1,4 +1,5 @@
-// GET /sitemap.xml — static landing pages, the /decks catalog, and up to MAX_DECKS public decks
+// GET /sitemap.xml — static landing pages, the deck catalog in every interface language (/decks,
+// /uk/decks, /de/decks, …, hreflang-linked), and up to MAX_DECKS public decks
 // at their canonical /decks/{short_id}/{slug} URL (lastmod = folders.updated_at), plus their section
 // pages. Pages that are noindex are left out: thin or junk decks and sections (_lib/indexing.js —
 // under MIN_INDEXABLE_WORDS words, test/placeholder names). The old /community/{short_id} URLs
@@ -9,7 +10,7 @@
 // cached briefly so it recovers on its own.
 
 import { SITE_ORIGIN, fetchPublicFolderIndex, fetchPublicSectionIndex } from "./_lib/community.js";
-import { deckLang } from "./_lib/deck-i18n.js";
+import { deckLang, CATALOG_LANGS, catalogPath, catalogAlternates } from "./_lib/deck-i18n.js";
 import { deckSlug, sectionSlug } from "./_lib/slug.js";
 import { deckPath } from "./_lib/deck-page.js";
 import { isIndexableDeck, isIndexableSection } from "./_lib/indexing.js";
@@ -18,10 +19,11 @@ import { cacheKeyFor, fromCache, toCache } from "./_lib/deck-route.js";
 const MAX_DECKS = 5000;
 
 // The landing locales are alternates of each other (mirrors the <link rel="alternate">
-// tags in index.html and uk/index.html).
+// tags in the landing pages).
+const LANDING_LANGS = ["en", "uk", "ar", "ja", "de", "pl"];
+const landingPath = (lang) => (lang === "en" ? "/" : `/${lang}/`);
 const LANDING_ALTERNATES = [
-  { hreflang: "en", path: "/" },
-  { hreflang: "uk", path: "/uk/" },
+  ...LANDING_LANGS.map((lang) => ({ hreflang: lang, path: landingPath(lang) })),
   { hreflang: "x-default", path: "/" },
 ];
 
@@ -33,14 +35,14 @@ const TUTORIAL_ALTERNATES = [
 ];
 
 const STATIC_PAGES = [
-  { path: "/", alternates: LANDING_ALTERNATES },
-  { path: "/uk/", alternates: LANDING_ALTERNATES },
+  ...LANDING_LANGS.map((lang) => ({ path: landingPath(lang), alternates: LANDING_ALTERNATES })),
   { path: "/support.html" },
   { path: "/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/uk/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/report.html" },
   { path: "/privacy-policy.html" },
-  { path: "/decks" },
+  // The deck catalog, once per interface language; each lists all the others as alternates.
+  ...CATALOG_LANGS.map((lang) => ({ path: catalogPath(lang), alternates: catalogAlternates() })),
 ];
 
 function escapeXml(value) {
