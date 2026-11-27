@@ -76,6 +76,36 @@ export function truncate(text, max) {
   return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[,;:.\-–—\s]+$/, "")}…`;
 }
 
+const SCRIPTS = {
+  latin: /\p{Script=Latin}/gu,
+  cyrillic: /\p{Script=Cyrillic}/gu,
+  arabic: /\p{Script=Arabic}/gu,
+  cjk: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu,
+};
+
+/** The script most of a text's letters are written in ("latin", "cyrillic", …), or null without letters. */
+export function dominantScript(text) {
+  let best = null;
+  let bestCount = 0;
+  for (const [name, re] of Object.entries(SCRIPTS)) {
+    const count = (String(text ?? "").match(re) || []).length;
+    if (count > bestCount) { best = name; bestCount = count; }
+  }
+  return best;
+}
+
+/**
+ * An author's description is written in whatever language they chose, but the meta description is
+ * the snippet people read in search results in the page's language. A description in another
+ * script (an English one on a Ukrainian page) is left out of the meta tags — the page still shows
+ * it — in favour of the generated, localized one.
+ */
+export function descriptionFitsPage(text, localizedSample) {
+  const written = dominantScript(text);
+  const expected = dominantScript(localizedSample);
+  return !written || !expected || written === expected;
+}
+
 /* ------------------------------------------------------------------------------- icons */
 
 const ICONS = {
@@ -589,7 +619,7 @@ export function renderSectionPage({ folder, sections, section, author, lang, dec
   const subtitle = `${phrase} ${s.withTranslation}`;
   const qualifiers = [folder.level || ""].filter(Boolean);
   const title = `${section.name} — ${folder.name}: ${subtitle}${qualifiers.length ? ` (${qualifiers.join(", ")})` : ""} | Atom Translate`;
-  const description = section.description && section.description.trim()
+  const description = section.description && section.description.trim() && descriptionFitsPage(section.description, s.sectionFallbackDescription)
     ? truncate(section.description, 160)
     : truncate(fmt(s.sectionFallbackDescription, capitalize(phrase), section.name, folder.name), 200);
   const hasQuiz = hasQuizWords([section]);
