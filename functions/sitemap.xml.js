@@ -1,4 +1,5 @@
-// GET /sitemap.xml — static landing pages, the /decks catalog, and up to MAX_DECKS public decks
+// GET /sitemap.xml — static landing pages, the deck catalog in every interface language (/decks,
+// /uk/decks, /de/decks, …, hreflang-linked), and up to MAX_DECKS public decks
 // at their canonical /decks/{short_id}/{slug} URL (lastmod = folders.updated_at), plus their section
 // pages. Pages that are noindex are left out: thin or junk decks and sections (_lib/indexing.js —
 // under MIN_INDEXABLE_WORDS words, test/placeholder names). The old /community/{short_id} URLs
@@ -9,7 +10,7 @@
 // cached briefly so it recovers on its own.
 
 import { SITE_ORIGIN, fetchPublicFolderIndex, fetchPublicSectionIndex } from "./_lib/community.js";
-import { deckLang } from "./_lib/deck-i18n.js";
+import { deckLang, CATALOG_LANGS, catalogPath, catalogAlternates } from "./_lib/deck-i18n.js";
 import { deckSlug, sectionSlug } from "./_lib/slug.js";
 import { deckPath } from "./_lib/deck-page.js";
 import { isIndexableDeck, isIndexableSection } from "./_lib/indexing.js";
@@ -40,7 +41,8 @@ const STATIC_PAGES = [
   { path: "/uk/tutorial-quizlet-import.html", alternates: TUTORIAL_ALTERNATES },
   { path: "/report.html" },
   { path: "/privacy-policy.html" },
-  { path: "/decks" },
+  // The deck catalog, once per interface language; each lists all the others as alternates.
+  ...CATALOG_LANGS.map((lang) => ({ path: catalogPath(lang), alternates: catalogAlternates() })),
 ];
 
 function escapeXml(value) {

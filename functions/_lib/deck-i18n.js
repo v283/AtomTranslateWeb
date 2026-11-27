@@ -2,6 +2,48 @@
 // English. The site has no shared i18n runtime — the landing pages are plain HTML per locale — so
 // the strings live here. Plain wording on purpose: no marketing phrases, no comparisons with other
 // apps, nothing that promises use without an account (saving words needs one).
+//
+// Deck and section pages exist in Ukrainian and English only (see deckLang). The /decks catalog
+// exists in every interface language of the app: Ukrainian and English are written out below, the
+// other 28 come from catalog-locales.js and fall back to English for anything missing.
+
+import { CATALOG_LOCALES } from "./catalog-locales.js";
+
+/** Catalog languages: English first (the default, /decks), then the rest in the app's order. */
+export const CATALOG_LANGS = ["en", "uk", ...Object.keys(CATALOG_LOCALES)];
+
+export function isCatalogLang(lang) {
+  return CATALOG_LANGS.includes(lang);
+}
+
+/** Path of the catalog in a language: /decks for English, /{lang}/decks otherwise. */
+export function catalogPath(lang) {
+  return !lang || lang === "en" ? "/decks" : `/${lang}/decks`;
+}
+
+/** hreflang alternates of the catalog: every language, English also as x-default. Paths, not URLs. */
+export function catalogAlternates() {
+  return [
+    ...CATALOG_LANGS.map((lang) => ({ hreflang: lang, path: catalogPath(lang) })),
+    { hreflang: "x-default", path: catalogPath("en") },
+  ];
+}
+
+const RTL_LANGS = new Set(["ar", "he", "fa"]);
+export function textDirection(lang) {
+  return RTL_LANGS.has(lang) ? "rtl" : "ltr";
+}
+
+// Open Graph wants language_TERRITORY; a language with no obvious territory gets the bare code.
+const OG_LOCALES = {
+  ar: "ar_AR", az: "az_AZ", cs: "cs_CZ", da: "da_DK", de: "de_DE", el: "el_GR", en: "en_US", es: "es_ES",
+  fa: "fa_IR", fi: "fi_FI", fr: "fr_FR", ga: "ga_IE", he: "he_IL", hi: "hi_IN", hu: "hu_HU", id: "id_ID",
+  it: "it_IT", ja: "ja_JP", ko: "ko_KR", nl: "nl_NL", pl: "pl_PL", pt: "pt_PT", sk: "sk_SK", sv: "sv_SE",
+  th: "th_TH", tr: "tr_TR", uk: "uk_UA", vi: "vi_VN", zh: "zh_CN",
+};
+export function ogLocale(lang) {
+  return OG_LOCALES[lang] || lang;
+}
 
 // Which UI language a deck page renders in. One URL, one language — what a crawler sees is what
 // a visitor sees. Ukrainian unless the deck says its learners speak something else: most public
@@ -83,14 +125,39 @@ const UK_CATEGORIES = {
   Other: "Інше",
 };
 
-export function languageName(lang, language) {
-  if (!language) return "";
-  return lang === "uk" ? UK_LANGUAGES[language]?.name || language : language;
+const displayNames = new Map();
+function displayName(lang, code) {
+  try {
+    if (!displayNames.has(lang)) displayNames.set(lang, new Intl.DisplayNames([lang], { type: "language" }));
+    return displayNames.get(lang).of(code);
+  } catch {
+    return undefined;
+  }
 }
 
+/** A language's name in itself ("de" -> "Deutsch"), for the language switcher. */
+export function nativeLanguageName(code) {
+  const name = displayName(code, code);
+  return name && name !== code ? name.charAt(0).toLocaleUpperCase(code) + name.slice(1) : code;
+}
+
+/** A language's name in the page language, from its stored English name ("German" -> "Німецька"). */
+export function languageName(lang, language) {
+  if (!language) return "";
+  if (lang === "uk") return UK_LANGUAGES[language]?.name || language;
+  if (lang === "en" || !CATALOG_LOCALES[lang]) return language;
+  const code = LANGUAGE_CODES[language];
+  const name = code && displayName(lang, code);
+  if (!name || name === code) return language;
+  // Intl gives lower-case names in some languages ("anglais"); a label starts with a capital.
+  return name.charAt(0).toLocaleUpperCase(lang) + name.slice(1);
+}
+
+/** The app translates only a few categories itself; the rest show as stored, like in the app. */
 export function categoryName(lang, category) {
   if (!category) return "";
-  return lang === "uk" ? UK_CATEGORIES[category] || category : category;
+  if (lang === "uk") return UK_CATEGORIES[category] || category;
+  return CATALOG_LOCALES[lang]?.categories?.[category] || category;
 }
 
 /** "63 англійські слова" / "63 English words" / "63 слова" when the language is unknown. */
@@ -105,8 +172,27 @@ export function wordsPhrase(lang, count, language) {
     if (info?.after) return `${count} ${noun} ${info.after}`;
     return `${count} ${noun}`;
   }
+  if (lang !== "en" && CATALOG_LOCALES[lang]) {
+    const cs = CATALOG_LOCALES[lang];
+    return fmt(count === 1 ? cs.wordOne : cs.wordMany, count);
+  }
   const noun = count === 1 ? "word" : "words";
   return language ? `${count} ${language} ${noun}` : `${count} ${noun}`;
+}
+
+/** "12 sections" in the page language. */
+export function sectionsText(lang, count) {
+  const cs = lang !== "en" && lang !== "uk" ? CATALOG_LOCALES[lang] : null;
+  if (cs) return fmt(count === 1 ? cs.sectionOne : cs.sectionMany, count);
+  const s = strings(lang);
+  return `${count} ${plural(lang, count, s.sections)}`;
+}
+
+/** "128 decks" / "1 deck found" in the page language. */
+export function decksFoundText(lang, count) {
+  const cs = lang !== "en" && lang !== "uk" ? CATALOG_LOCALES[lang] : null;
+  if (cs) return fmt(count === 1 ? cs.foundOne : cs.foundMany, count);
+  return countLabel(lang, count, strings(lang).found);
 }
 
 // Leaderboard modes (the API's wire names), as the app calls them.
@@ -313,6 +399,11 @@ const STRINGS = {
     found: { one: "deck", many: "decks" },
   },
 };
+
+// Other catalog languages: English wording underneath, the localised strings over it.
+for (const [code, localized] of Object.entries(CATALOG_LOCALES)) {
+  STRINGS[code] = { ...STRINGS.en, ...localized };
+}
 
 export function strings(lang) {
   return STRINGS[lang] || STRINGS.en;

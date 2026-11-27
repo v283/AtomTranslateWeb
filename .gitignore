@@ -6,3 +6,6 @@ node_modules/
 .env
 .env.*
 .dev.vars
+
+# graphify: локальний граф знань, лише на цьому ПК
+graphify-out/
